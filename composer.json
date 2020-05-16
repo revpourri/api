@@ -1,0 +1,26 @@
+{
+  "name": "revpourri/api",
+  "description": "Revpourri's API",
+  "authors": [
+    {
+      "name": "Evan",
+      "email": "evan@evanb.dev"
+    }
+  ],
+  "require": {
+    "php": ">=7.2",
+    "ext-phalcon": "^3.3",
+    "ext-curl": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "robmorgan/phinx": "^0.12.1"
+  },
+  "config": {
+    "vendor-dir": "./vendor"
+  },
+  "autoload": {
+    "classmap": [
+      "."
+    ]
+  }
+}

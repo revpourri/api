@@ -1,0 +1,173 @@
+<?php
+
+namespace Rev\Models;
+
+use Phalcon\Mvc\Model\Message;
+use Phalcon\Validation;
+use Phalcon\Validation\Validator\PresenceOf;
+
+class VideoModel extends \Phalcon\Mvc\Model
+{
+    /**
+    * @var int
+    */
+    public $id;
+    /**
+    * @var string
+    */
+    public $title;
+    /**
+    * @var string
+    */
+    public $slug;
+    /**
+    * @var string
+    */
+    public $youtube_id;
+    /**
+    * @var int
+    */
+    public $uploader_id;
+    /**
+    * @var string
+    */
+    public $created_time;
+    /**
+    * @var string
+    */
+    public $published_date;
+    /**
+    * @var string
+    */
+    public $type;
+
+    /**
+    * @var array
+    */
+    protected $_types = [
+        '1' => 'review',
+        '2' => 'project',
+    ];
+
+    /**
+     * @return void
+     */
+    public function initialize(): void
+    {
+        $this->setSource('videos');
+
+        $this->belongsTo(
+            'uploader_id',
+            '\Rev\Models\UploaderModel',
+            'id',
+            ['foreignKey' => true, 'alias' => 'Uploader']
+        );
+
+        $this->hasMany(
+            'id',
+            '\Rev\Models\VideoAutosModel',
+            'video_id',
+            ['foreignKey' => true, 'alias' => 'VideoAutos']
+        );
+    }
+
+    /**
+     * @return void
+     */
+    public function beforeValidationOnCreate(): void
+    {
+        if (!isset($this->created_time)) {
+            $this->created_time = date('Y-m-d H:i:s', time());
+        }
+
+        if (!isset($this->slug)) {
+            $this->slug = $this->generateSlug($this->title);
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public function validation(): bool
+    {
+        $validator = new Validation();
+
+        $validator->add(
+            'title',
+            new PresenceOf([
+                'message' => "Title is required"
+            ])
+        );
+
+        return $this->validate($validator);
+    }
+
+    /**
+     * @return array
+     */
+    public function baseObj(): array
+    {
+        return [
+            'id' => (int)$this->id,
+            'title' => (string)$this->title,
+            'slug' => (string)'/video/' . $this->slug,
+            'created_time' => date('c', strtotime($this->created_time)),
+            'published_date' => date('Y-m-d', strtotime($this->published_date)),
+            'youtube_id' => (string)$this->youtube_id,
+            'uploader_id' => (int)$this->uploader_id,
+            'type' => (string)$this->_types[$this->type],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function build(): array
+    {
+        if (!$this->id) {
+            return [];
+        }
+
+        $obj = $this->baseObj();
+
+        if ($this->Uploader) {
+            $obj['uploader'] = $this->Uploader->build();
+        }
+
+        $obj['autos'] = [];
+        foreach ($this->VideoAutos as $VideoAuto) {
+            $auto = $VideoAuto->Auto->build();
+
+            $obj['autos'][] = $auto;
+        }
+
+        return $obj;
+    }
+
+    /**
+     * Generates a slug.  Removes all special characters, adds dashes for spaces
+     *
+     * @param $title
+     * @return string
+     */
+    private function generateSlug($title): string
+    {
+        $slug = trim(strtolower($title));
+        $slug = preg_replace("/[^a-z0-9_\s-]/", "", $slug);
+        $slug = preg_replace("/[\s-]+/", " ", $slug);
+        $slug = preg_replace("/[\s_]/", "-", $slug);
+
+        $l = VideoModel::find([
+            'conditions' => 'slug = :slug:',
+            'bind' => [
+                'slug' => $title
+            ]
+        ]);
+
+        if (count($l) > 0) {
+            $slug .= '-' . count($l);
+        }
+
+        return $slug;
+    }
+}

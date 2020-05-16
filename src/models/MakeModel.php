@@ -6,6 +6,10 @@ use Phalcon\Mvc\Model\Message;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
 
+/**
+ * Class MakeModel
+ * @package Rev\Models
+ */
 class MakeModel extends \Phalcon\Mvc\Model
 {
     /**

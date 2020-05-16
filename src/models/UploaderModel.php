@@ -6,6 +6,10 @@ use Phalcon\Mvc\Model\Message;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
 
+/**
+ * Class UploaderModel
+ * @package Rev\Models
+ */
 class UploaderModel extends \Phalcon\Mvc\Model
 {
     /**

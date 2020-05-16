@@ -6,6 +6,10 @@ use Phalcon\Mvc\Model\Message;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
 
+/**
+ * Class ProjectVideosModel
+ * @package Rev\Models
+ */
 class ProjectVideosModel extends \Phalcon\Mvc\Model
 {
     /**

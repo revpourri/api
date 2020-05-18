@@ -172,6 +172,12 @@ class VideoController extends \Phalcon\Mvc\Controller
             ]);
         }
 
+        if ($_GET['featured']) {
+            $query = $query->where('Rev\Models\VideoModel.featured = :featured:', [
+                'featured' => (in_array($_GET['featured'], ['true', '1'])) ? 1 : 0,
+            ]);
+        }
+
         $query = $query->groupBy('Rev\Models\VideoModel.id');
 
         if ($_GET['limit']) {

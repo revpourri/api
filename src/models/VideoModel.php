@@ -44,6 +44,14 @@ class VideoModel extends \Phalcon\Mvc\Model
     * @var int
     */
     public $type;
+    /**
+    * @var bool
+    */
+    public $featured;
+    /**
+    * @var string
+    */
+    public $preview_video;
 
     /**
     * @var array
@@ -87,8 +95,21 @@ class VideoModel extends \Phalcon\Mvc\Model
         if (!isset($this->slug)) {
             $this->slug = $this->generateSlug($this->title);
         }
+
         if (!is_int($this->type)) {
             $this->type = array_search($this->type, $this->_types);
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function beforeValidation(): void
+    {
+        if ($this->featured && ($this->featured == 'true' || $this->featured == '1')) {
+            $this->featured = 1;
+        } else {
+            $this->featured = 0;
         }
     }
 
@@ -123,6 +144,8 @@ class VideoModel extends \Phalcon\Mvc\Model
             'youtube_id' => (string)$this->youtube_id,
             'uploader_id' => (int)$this->uploader_id,
             'type' => (string)$this->_types[$this->type],
+            'featured' => (bool)$this->featured,
+            'preview_video' => (string)$this->preview_video,
         ];
     }
 

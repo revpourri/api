@@ -14,6 +14,8 @@ Parameter | Type | Description
 **created_time** | *string* | Resource created time
 **published_date** | *string* | Youtube's video published date
 **type** | *string* | Type of video: `review`, `project`
+**featured** | *boolean* | Is a featured video
+**preview_video** | *string* | Filename of preview video
 
 ## Create Video Resource
 
@@ -33,6 +35,8 @@ curl "https://api.revpourri.com/videos" \
     "published_date": "2001-02-01",
     "youtube_id": "fYq5PXgSsbE",
     "type": "review",
+    "featured": true,
+    "preview_video": "s2000.mp4",
     "uploader": {
         "id": 1,
         "name": "Car Reviewer",
@@ -73,6 +77,8 @@ Parameter | Type | Description
 **uploader_id** | *integer* | Uploader resource ID
 **published_date** | *string* | Youtube's video published date
 **type** | *string* | Type of video: `review`, `project`
+**featured** | *boolean* | Is a featured video
+**preview_video** | *string* | Filename of preview video
 
 ## Retrieve a Video
 
@@ -93,6 +99,8 @@ curl "https://api.revpourri.com/videos/1" \
     "published_date": "2001-02-01",
     "youtube_id": "fYq5PXgSsbE",
     "type": "review",
+    "featured": true,
+    "preview_video": "s2000.mp4",
     "uploader": {
         "id": 1,
         "name": "Car Reviewer",
@@ -144,6 +152,8 @@ curl "https://api.revpourri.com/videos/1" \
     "published_date": "2001-02-01",
     "youtube_id": "fYq5PXgSsbE",
     "type": "review",
+    "featured": true,
+    "preview_video": "s2000.mp4",
     "uploader": {
         "id": 1,
         "name": "Car Reviewer",
@@ -215,6 +225,8 @@ curl "https://api.revpourri.com/videos" \
             "published_date": "2001-02-01",
             "youtube_id": "fYq5PXgSsbE",
             "type": "review",
+            "featured": true,
+            "preview_video": "s2000.mp4",
             "uploader": {
                 "id": 1,
                 "name": "Car Reviewer",

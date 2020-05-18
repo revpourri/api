@@ -73,4 +73,4 @@ $app->notFound(function () use ($app) {
     ]);
 });
 
-$app->handle();
+$app->handle($_SERVER["REQUEST_URI"]);

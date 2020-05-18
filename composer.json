@@ -9,7 +9,7 @@
   ],
   "require": {
     "php": ">=7.2",
-    "ext-phalcon": "^3.3",
+    "ext-phalcon": "^4.0",
     "ext-curl": "*",
     "ext-json": "*",
     "ext-mbstring": "*",

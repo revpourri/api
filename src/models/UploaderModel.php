@@ -24,6 +24,14 @@ class UploaderModel extends \Phalcon\Mvc\Model
     * @var int
     */
     public $youtube_id;
+    /**
+     * @var string
+     */
+    public $avatar;
+    /**
+     * @var string
+     */
+    public $created_time;
 
     /**
      * @return void
@@ -38,6 +46,16 @@ class UploaderModel extends \Phalcon\Mvc\Model
             'uploader_id',
             ['foreignKey' => true, 'alias' => 'Videos']
         );
+    }
+
+    /**
+     * @return void
+     */
+    public function beforeValidationOnCreate(): void
+    {
+        if (!isset($this->created_time)) {
+            $this->created_time = date('Y-m-d H:i:s', time());
+        }
     }
 
     /**

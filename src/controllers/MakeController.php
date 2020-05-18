@@ -2,6 +2,7 @@
 
 namespace Rev\Controllers;
 
+use Phalcon\Paginator\Adapter\Model as PaginatorModel;
 use Rev\Models\ModelModel as ModelModel;
 use Rev\Models\AutoModel as AutoModel;
 use Rev\Models\MakeModel as MakeModel;
@@ -47,6 +48,16 @@ class MakeController extends \Phalcon\Mvc\Controller
             'order' => 'value ASC'
         ]);
 
+        $paginator = new PaginatorModel(
+            [
+                'data'  => $Makes,
+                'limit' => $_GET['limit'] ?: 100,
+                'page'  => $_GET['page'] ?: 1,
+            ]
+        );
+
+        $page = $paginator->getPaginate();
+
         $makes = [];
         foreach ($Makes as $Make) {
             $makes[] = $Make->build();
@@ -54,7 +65,13 @@ class MakeController extends \Phalcon\Mvc\Controller
 
         $this->response->setStatusCode($this->code);
         $this->response->setJsonContent([
-            'links' => [],
+            'links' => [
+                'current' => '/makes?page=' . $page->current,
+                'first' => '/makes?page=' . $page->first,
+                'last' => '/makes?page=' . $page->last,
+                'prev' => '/makes?page=' . $page->previous,
+                'next' => '/makes?page=' . $page->next,
+            ],
             "count" => count($makes),
             'data' => $makes,
         ]);

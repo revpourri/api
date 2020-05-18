@@ -41,7 +41,7 @@ class VideoModel extends \Phalcon\Mvc\Model
     */
     public $published_date;
     /**
-    * @var string
+    * @var int
     */
     public $type;
 
@@ -86,6 +86,9 @@ class VideoModel extends \Phalcon\Mvc\Model
 
         if (!isset($this->slug)) {
             $this->slug = $this->generateSlug($this->title);
+        }
+        if (!is_int($this->type)) {
+            $this->type = array_search($this->type, $this->_types);
         }
     }
 

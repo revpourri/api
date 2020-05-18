@@ -3,6 +3,7 @@
 namespace Rev\Controllers;
 
 use Phalcon\Mvc\Controller;
+use Phalcon\Paginator\Adapter\Model as PaginatorModel;
 use Rev\Models\AutoModel;
 use Rev\Models\MakeModel;
 use Rev\Models\ModelModel;
@@ -149,13 +150,34 @@ class AutoController extends Controller
         }
 
         $res = $query->getQuery()->execute();
+
+        $paginator = new PaginatorModel(
+            [
+                'data'  => $res,
+                'limit' => $_GET['limit'] ?: 10,
+                'page'  => $_GET['page'] ?: 1,
+            ]
+        );
+
+        $page = $paginator->getPaginate();
+
         $autos = [];
         foreach ($res as $l) {
             $autos[] = (\Rev\Models\AutoModel::findFirstById($l->id))->build();
         }
 
         $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($autos);
+        $this->response->setJsonContent([
+            'links' => [
+                'current' => '/videos?page=' . $page->current,
+                'first' => '/videos?page=' . $page->first,
+                'last' => '/videos?page=' . $page->last,
+                'prev' => '/videos?page=' . $page->previous,
+                'next' => '/videos?page=' . $page->next,
+            ],
+            "count" => count($res),
+            'data' => $autos,
+        ]);
 
         return $this->response;
     }

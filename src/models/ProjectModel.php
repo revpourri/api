@@ -6,6 +6,8 @@ use Phalcon\Mvc\Model\Message;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
 
+use Rev\Utils\GenerateSlug;
+
 /**
  * Class ProjectModel
  * @package Rev\Models
@@ -75,8 +77,8 @@ class ProjectModel extends \Phalcon\Mvc\Model
             $this->created_time = date('Y-m-d H:i:s', time());
         }
 
-        if (!isset($this->name)) {
-            $this->slug = $this->generateSlug($this->name);
+        if ($this->name && !isset($this->slug)) {
+            $this->slug = GenerateSlug::getSlug($this->value, new ProjectModel());
         }
     }
 
@@ -133,7 +135,7 @@ class ProjectModel extends \Phalcon\Mvc\Model
 
         $videos = [];
         foreach ($this->ProjectVideos as $ProjectVideo) {
-            $videos[] = $ProjectVideo->Video->baseObj();
+            $videos[] = $ProjectVideo->Video->build();
         }
 
         $obj['videos'] = $videos;

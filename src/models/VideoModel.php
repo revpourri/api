@@ -2,6 +2,8 @@
 
 namespace Rev\Models;
 
+use Rev\Utils\GenerateSlug;
+
 use Phalcon\Mvc\Model\Message;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
@@ -92,8 +94,8 @@ class VideoModel extends \Phalcon\Mvc\Model
             $this->created_time = date('Y-m-d H:i:s', time());
         }
 
-        if (!isset($this->slug)) {
-            $this->slug = $this->generateSlug($this->title);
+        if ($this->title && !isset($this->slug)) {
+            $this->slug = GenerateSlug::getSlug($this->title, new VideoModel());
         }
 
         if (!is_int($this->type)) {
@@ -138,7 +140,7 @@ class VideoModel extends \Phalcon\Mvc\Model
         return [
             'id' => (int)$this->id,
             'title' => (string)$this->title,
-            'slug' => (string)'/video/' . $this->slug,
+            'slug' => (string)$this->slug,
             'created_time' => date('c', strtotime($this->created_time)),
             'published_date' => date('Y-m-d', strtotime($this->published_date)),
             'youtube_id' => (string)$this->youtube_id,
@@ -172,32 +174,5 @@ class VideoModel extends \Phalcon\Mvc\Model
         }
 
         return $obj;
-    }
-
-    /**
-     * Generates a slug.  Removes all special characters, adds dashes for spaces
-     *
-     * @param $title
-     * @return string
-     */
-    private function generateSlug($title): string
-    {
-        $slug = trim(strtolower($title));
-        $slug = preg_replace("/[^a-z0-9_\s-]/", "", $slug);
-        $slug = preg_replace("/[\s-]+/", " ", $slug);
-        $slug = preg_replace("/[\s_]/", "-", $slug);
-
-        $l = VideoModel::find([
-            'conditions' => 'slug = :slug:',
-            'bind' => [
-                'slug' => $title
-            ]
-        ]);
-
-        if (count($l) > 0) {
-            $slug .= '-' . count($l);
-        }
-
-        return $slug;
     }
 }

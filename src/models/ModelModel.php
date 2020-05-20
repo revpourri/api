@@ -6,6 +6,8 @@ use Phalcon\Mvc\Model\Message;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
 
+use Rev\Utils\GenerateSlug;
+
 /**
  * Class ModelModel
  * @package Rev\Models
@@ -38,6 +40,16 @@ class ModelModel extends \Phalcon\Mvc\Model
             'video_id',
             ['foreignKey' => true, 'alias' => 'Autos']
         );
+    }
+
+    /**
+     * @return void
+     */
+    public function beforeValidationOnCreate(): void
+    {
+        if ($this->value && !isset($this->slug)) {
+            $this->slug = GenerateSlug::getSlug($this->value, new ModelModel());
+        }
     }
 
     /**

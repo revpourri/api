@@ -54,22 +54,34 @@ class AutoController extends Controller
         $input = $this->request->getJsonRawBody(true);
 
         $Make = MakeModel::findFirstById($input['make_id']);
-        $Model = ModelModel::findFirstById($input['model_id']);
 
-        if (!$Model) {
-            $Model = new ModelModel();
-            $Model->save([
-                'value' => $input['model'],
-                'slug' => strtolower($input['model']),
-            ]);
+        $Model = null;
+        if ($input['model_id']) {
+            $Model = ModelModel::findFirstById($input['model_id']);
+        } else if ($input['model']) {
+            $Model = ModelModel::findFirstByValue($input['model']);
         }
 
-        $Auto = new AutoModel();
-        if (!$Auto->save([
+        if (!$Model) {
+            $Model = (new ModelModel())->assign([
+                'value' => $input['model']
+            ]);
+
+            if (!$Model->create()) {
+                $msgs = $Model->getMessages();
+                $this->return['message'] = $msgs[0]->getMessage();
+                $this->response->setJsonContent($this->return);
+
+                return $this->response;
+            }
+        }
+
+        $Auto = (new AutoModel())->assign([
             'year' => $input['year'],
             'model_id' => $Model->id,
             'make_id' => $Make->id,
-        ])) {
+        ]);
+        if (!$Auto->create()) {
             $msgs = $Auto->getMessages();
             $this->return['message'] = $msgs[0]->getMessage();
             $this->response->setJsonContent($this->return);

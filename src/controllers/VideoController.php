@@ -51,9 +51,17 @@ class VideoController extends Controller
     {
         $input = $this->request->getJsonRawBody(true);
 
-        $Video = new VideoModel();
+        $Video = (new VideoModel())->assign($input, [
+            'title',
+            'youtube_id',
+            'uploader_id',
+            'published_date',
+            'type',
+            'featured',
+            'preview_video',
+        ]);
 
-        if (!$Video->save($input)) {
+        if (!$Video->create()) {
             $msgs = $Video->getMessages();
             $this->return['message'] = $msgs[0]->getMessage();
             $this->response->setJsonContent($this->return);
@@ -62,11 +70,11 @@ class VideoController extends Controller
         }
 
         foreach ($input['autos'] as $auto) {
-            $VideoAuto = new \Rev\Models\VideoAutosModel();
-            $VideoAuto->save([
+            $VideoAuto = (new VideoAutosModel())->assign([
                 'video_id' => $Video->id,
                 'auto_id' => $auto['id'],
             ]);
+            $VideoAuto->save();
         }
 
         // If project_id is passed, add to project

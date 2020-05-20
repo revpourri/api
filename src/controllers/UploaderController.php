@@ -45,9 +45,15 @@ class UploaderController extends \Phalcon\Mvc\Controller
     {
         $input = $this->request->getJsonRawBody(true);
 
-        $Uploader = new \Rev\Models\UploaderModel();
-        
-        if (!$Uploader->save($input)) {
+        $Uploader = (new UploaderModel())->assign(
+            $input,
+            [
+                'name',
+                'youtube_id',
+            ]
+        );
+
+        if (!$Uploader->create()) {
             $msgs = $Uploader->getMessages();
             $this->return['message'] = $msgs[0]->getMessage();
             $this->response->setJsonContent($this->return);

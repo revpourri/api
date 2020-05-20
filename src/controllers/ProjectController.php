@@ -51,7 +51,14 @@ class ProjectController extends Controller
     {
         $input = $this->request->getJsonRawBody(true);
 
-        $Project = new ProjectModel();
+        $Project = (new ProjectModel())->assign(
+            $input,
+            [
+                'name',
+                'uploader_id',
+                'auto_id',
+            ]
+        );
         
         if (!$Project->save($input)) {
             $msgs = $Project->getMessages();
@@ -78,8 +85,17 @@ class ProjectController extends Controller
         $Project = ProjectModel::findFirstById($id);
 
         $input = $this->request->getJsonRawBody(true);
-        
-        if (!$Project->save($input)) {
+
+        $Project->assign(
+            $input,
+            [
+                'name',
+                'uploader_id',
+                'auto_id',
+            ]
+        );
+
+        if (!$Project->update($input)) {
             $msgs = $Project->getMessages();
             $this->return['message'] = $msgs[0]->getMessage();
             $this->response->setJsonContent($this->return);

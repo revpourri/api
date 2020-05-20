@@ -2,11 +2,17 @@
 
 namespace Rev\Controllers;
 
+use Phalcon\Mvc\Controller;
+use Phalcon\Paginator\Adapter\QueryBuilder as Paginator;
+
+use Rev\Utils\PaginationResponse;
+use Rev\Models\ProjectModel;
+
 /**
  * Class ProjectController
  * @package Rev\Controllers
  */
-class ProjectController extends \Phalcon\Mvc\Controller
+class ProjectController extends Controller
 {
     /**
      * @var int
@@ -23,7 +29,7 @@ class ProjectController extends \Phalcon\Mvc\Controller
      */
     public function get(int $id): \Phalcon\Http\Response
     {
-        $Project = \Rev\Models\ProjectModel::findFirstById($id);
+        $Project = ProjectModel::findFirstById($id);
 
         if (!$Project) {
             $this->response->setStatusCode(404);
@@ -45,7 +51,7 @@ class ProjectController extends \Phalcon\Mvc\Controller
     {
         $input = $this->request->getJsonRawBody(true);
 
-        $Project = new \Rev\Models\ProjectModel();
+        $Project = new ProjectModel();
         
         if (!$Project->save($input)) {
             $msgs = $Project->getMessages();
@@ -64,12 +70,12 @@ class ProjectController extends \Phalcon\Mvc\Controller
     }
 
     /**
-     * @param $id
+     * @param int $id
      * @return \Phalcon\Http\Response
      */
-    public function update($id): \Phalcon\Http\Response
+    public function update(int $id): \Phalcon\Http\Response
     {
-        $Project = \Rev\Models\ProjectModel::findFirstById($id);
+        $Project = ProjectModel::findFirstById($id);
 
         $input = $this->request->getJsonRawBody(true);
         
@@ -90,12 +96,12 @@ class ProjectController extends \Phalcon\Mvc\Controller
     }
 
     /**
-     * @param $id
+     * @param int $id
      * @return \Phalcon\Http\Response
      */
-    public function delete($id): \Phalcon\Http\Response
+    public function delete(int $id): \Phalcon\Http\Response
     {
-        $Project = \Rev\Models\ProjectModel::findFirstById($id);
+        $Project = ProjectModel::findFirstById($id);
 
         $Project->delete();
 
@@ -109,6 +115,16 @@ class ProjectController extends \Phalcon\Mvc\Controller
      */
     public function search(): \Phalcon\Http\Response
     {
+        $prefix = '/projects';
+        $limit = $_GET['limit'] ?: 10;
+        $acceptedParams = [
+            'sort' => $_GET['sort'],
+            'slug' => $_GET['slug'],
+            'make' => $_GET['make'],
+            'model' => $_GET['model'],
+        ];
+
+        // Build
         $query = $this->modelsManager->createBuilder()
             ->columns('Rev\Models\ProjectModel.*')
             ->from('Rev\Models\ProjectModel')
@@ -133,19 +149,40 @@ class ProjectController extends \Phalcon\Mvc\Controller
             ]);
         }
 
-        $res = $query->getQuery()->execute();
-        $projects = [];
-        foreach ($res as $l) {
-            $Projects = \Rev\Models\ProjectModel::findFirstById($l->id);
-            $projects[] = $Projects->build();
+        $query = $query->groupBy('Rev\Models\ProjectModel.id');
+
+        // Handle sorting
+        if ($_GET['sort']) {
+            $sortBys = explode(',', $_GET['sort']);
+
+            foreach ($sortBys as $sortBy) {
+                $sortBy = explode(':', $sortBy);
+
+                // Special cases
+                if ($sortBy[0] == 'id') {
+                    $sortBy[0] = 'Rev\Models\ProjectModel.id';
+                }
+
+                $query = $query->orderBy($sortBy[0] . ' ' . $sortBy[1]);
+            }
+        }
+
+        // Pagination
+        $page = (new Paginator(
+            [
+                'builder'  => $query,
+                'limit' => $limit,
+                'page'  => $_GET['page'] ?: 1,
+            ]
+        ))->paginate();
+
+        $data = [];
+        foreach ($page->getItems() as $l) {
+            $data[] = $l->build();
         }
 
         $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent([
-            'links' => [],
-            "count" => count($projects),
-            'data' => $projects,
-        ]);
+        $this->response->setJsonContent(PaginationResponse::getResponse($prefix, $page, $limit, $acceptedParams, $data));
 
         return $this->response;
     }

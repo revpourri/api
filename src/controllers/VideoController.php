@@ -2,14 +2,17 @@
 
 namespace Rev\Controllers;
 
-use Phalcon\Paginator\Adapter\Model as PaginatorModel;
+use Phalcon\Mvc\Controller;
+use Phalcon\Paginator\Adapter\QueryBuilder as Paginator;
+
+use Rev\Utils\PaginationResponse;
 use Rev\Models\VideoModel;
 
 /**
  * Class VideoController
  * @package Rev\Controllers
  */
-class VideoController extends \Phalcon\Mvc\Controller
+class VideoController extends Controller
 {
     /**
      * @var int
@@ -141,6 +144,18 @@ class VideoController extends \Phalcon\Mvc\Controller
      */
     public function search(): \Phalcon\Http\Response
     {
+        $prefix = '/videos';
+        $limit = $_GET['limit'] ?: 10;
+        $acceptedParams = [
+            'sort' => $_GET['sort'],
+            'slug' => $_GET['slug'],
+            'make' => $_GET['make'],
+            'model' => $_GET['model'],
+            'type' => $_GET['type'],
+            'featured' => $_GET['featured'],
+        ];
+
+        // Build
         $query = $this->modelsManager->createBuilder()
             ->columns('Rev\Models\VideoModel.*')
             ->from('Rev\Models\VideoModel')
@@ -180,12 +195,6 @@ class VideoController extends \Phalcon\Mvc\Controller
 
         $query = $query->groupBy('Rev\Models\VideoModel.id');
 
-        if ($_GET['limit']) {
-            $query = $query->limit($_GET['limit']);
-        } else {
-            $query = $query->limit(10);
-        }
-
         // Handle sorting
         if ($_GET['sort']) {
             $sortBys = explode(',', $_GET['sort']);
@@ -202,36 +211,22 @@ class VideoController extends \Phalcon\Mvc\Controller
             }
         }
 
-        $res = $query->getQuery()->execute();
-
-        $paginator = new PaginatorModel(
+        // Pagination
+        $page = (new Paginator(
             [
-                'data'  => $res,
-                'limit' => $_GET['limit'] ?: 10,
+                'builder'  => $query,
+                'limit' => $limit,
                 'page'  => $_GET['page'] ?: 1,
             ]
-        );
+        ))->paginate();
 
-        $page = $paginator->getPaginate();
-
-        $videos = [];
-        foreach ($res as $l) {
-            $Video = VideoModel::findFirstById($l->id);
-            $videos[] = $Video->build();
+        $data = [];
+        foreach ($page->getItems() as $l) {
+            $data[] = $l->build();
         }
 
         $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent([
-            'links' => [
-                'current' => '/videos?page=' . $page->current,
-                'first' => '/videos?page=' . $page->first,
-                'last' => '/videos?page=' . $page->last,
-                'prev' => '/videos?page=' . $page->previous,
-                'next' => '/videos?page=' . $page->next,
-            ],
-            "count" => count($res),
-            'data' => $videos,
-        ]);
+        $this->response->setJsonContent(PaginationResponse::getResponse($prefix, $page, $limit, $acceptedParams, $data));
 
         return $this->response;
     }

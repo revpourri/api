@@ -3,7 +3,9 @@
 namespace Rev\Controllers;
 
 use Phalcon\Mvc\Controller;
-use Phalcon\Paginator\Adapter\Model as PaginatorModel;
+use Phalcon\Paginator\Adapter\QueryBuilder as Paginator;
+
+use Rev\Utils\PaginationResponse;
 use Rev\Models\AutoModel;
 use Rev\Models\MakeModel;
 use Rev\Models\ModelModel;
@@ -45,7 +47,7 @@ class AutoController extends Controller
     }
 
     /**
-     * @return mixed
+     * @return \Phalcon\Http\Response
      */
     public function create(): \Phalcon\Http\Response
     {
@@ -84,10 +86,10 @@ class AutoController extends Controller
     }
 
     /**
-     * @param $id
-     * @return mixed
+     * @param int $id
+     * @return \Phalcon\Http\Response
      */
-    public function update($id): \Phalcon\Http\Response
+    public function update(int $id): \Phalcon\Http\Response
     {
         $Auto = AutoModel::findFirstById($id);
         
@@ -108,10 +110,10 @@ class AutoController extends Controller
     }
 
     /**
-     * @param $id
-     * @return mixed
+     * @param int $id
+     * @return \Phalcon\Http\Response
      */
-    public function delete($id): \Phalcon\Http\Response
+    public function delete(int $id): \Phalcon\Http\Response
     {
         $Auto = AutoModel::findFirstById($id);
 
@@ -128,10 +130,19 @@ class AutoController extends Controller
     }
 
     /**
-     * @return mixed
+     * @return \Phalcon\Http\Response
      */
     public function search(): \Phalcon\Http\Response
     {
+        $prefix = '/autos';
+        $limit = $_GET['limit'] ?: 10;
+        $acceptedParams = [
+            'sort' => $_GET['sort'],
+            'make' => $_GET['make'],
+            'model' => $_GET['model'],
+        ];
+
+        // Build
         $query = $this->modelsManager->createBuilder()
             ->columns('Rev\Models\AutoModel.*')
             ->from('Rev\Models\AutoModel')
@@ -149,35 +160,22 @@ class AutoController extends Controller
             ]);
         }
 
-        $res = $query->getQuery()->execute();
-
-        $paginator = new PaginatorModel(
+        // Pagination
+        $page = (new Paginator(
             [
-                'data'  => $res,
-                'limit' => $_GET['limit'] ?: 10,
+                'builder'  => $query,
+                'limit' => $limit,
                 'page'  => $_GET['page'] ?: 1,
             ]
-        );
+        ))->paginate();
 
-        $page = $paginator->getPaginate();
-
-        $autos = [];
-        foreach ($res as $l) {
-            $autos[] = (\Rev\Models\AutoModel::findFirstById($l->id))->build();
+        $data = [];
+        foreach ($page->getItems() as $l) {
+            $data[] = $l->build();
         }
 
         $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent([
-            'links' => [
-                'current' => '/videos?page=' . $page->current,
-                'first' => '/videos?page=' . $page->first,
-                'last' => '/videos?page=' . $page->last,
-                'prev' => '/videos?page=' . $page->previous,
-                'next' => '/videos?page=' . $page->next,
-            ],
-            "count" => count($res),
-            'data' => $autos,
-        ]);
+        $this->response->setJsonContent(PaginationResponse::getResponse($prefix, $page, $limit, $acceptedParams, $data));
 
         return $this->response;
     }

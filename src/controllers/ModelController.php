@@ -2,16 +2,17 @@
 
 namespace Rev\Controllers;
 
-use Phalcon\Paginator\Adapter\Model as PaginatorModel;
+use Phalcon\Mvc\Controller;
+use Phalcon\Paginator\Adapter\QueryBuilder as Paginator;
+
+use Rev\Utils\PaginationResponse;
 use Rev\Models\ModelModel as ModelModel;
-use Rev\Models\AutoModel as AutoModel;
-use Rev\Models\MakeModel as MakeModel;
 
 /**
  * Class ModelController
  * @package Rev\Controllers
  */
-class ModelController extends \Phalcon\Mvc\Controller
+class ModelController extends Controller
 {
     /**
      * @var int
@@ -43,6 +44,14 @@ class ModelController extends \Phalcon\Mvc\Controller
      */
     public function search(): \Phalcon\Http\Response
     {
+        $prefix = '/models';
+        $limit = $_GET['limit'] ?: 100;
+        $acceptedParams = [
+            'sort' => $_GET['sort'],
+            'make' => $_GET['make'],
+            'model' => $_GET['model'],
+        ];
+
         $query = $this->modelsManager->createBuilder()
             ->columns('Rev\Models\ModelModel.*')
             ->from('Rev\Models\ModelModel')
@@ -56,41 +65,28 @@ class ModelController extends \Phalcon\Mvc\Controller
                 'slug' => $_GET['make'],
             ]);
         }
-
-        $res = $query->getQuery()->execute();
-        $models = [];
-        foreach ($res as $l) {
-            // If model already exists, skip.  Grouping above caused SQL 1055 error
-            if (array_search($l->slug, array_column($models, 'slug'))) {
-                continue;
-            }
-
-            $Model = ModelModel::findFirstById($l->id);
-            $models[] = $Model->build();
+        if ($_GET['model']) {
+            $query = $query->where("Rev\Models\MakeModel.slug = :slug:", [
+                'slug' => $_GET['model'],
+            ]);
         }
 
-        $paginator = new PaginatorModel(
+        // Pagination
+        $page = (new Paginator(
             [
-                'data'  => $res,
-                'limit' => $_GET['limit'] ?: 100,
+                'builder'  => $query,
+                'limit' => $limit,
                 'page'  => $_GET['page'] ?: 1,
             ]
-        );
+        ))->paginate();
 
-        $page = $paginator->getPaginate();
+        $data = [];
+        foreach ($page->getItems() as $l) {
+            $data[] = $l->build();
+        }
 
         $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent([
-            'links' => [
-                'current' => '/videos?page=' . $page->current,
-                'first' => '/videos?page=' . $page->first,
-                'last' => '/videos?page=' . $page->last,
-                'prev' => '/videos?page=' . $page->previous,
-                'next' => '/videos?page=' . $page->next,
-            ],
-            "count" => count($res),
-            'data' => $models,
-        ]);
+        $this->response->setJsonContent(PaginationResponse::getResponse($prefix, $page, $limit, $acceptedParams, $data));
 
         return $this->response;
     }

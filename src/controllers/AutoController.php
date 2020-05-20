@@ -58,7 +58,7 @@ class AutoController extends Controller
         $Model = null;
         if ($input['model_id']) {
             $Model = ModelModel::findFirstById($input['model_id']);
-        } else if ($input['model']) {
+        } elseif ($input['model']) {
             $Model = ModelModel::findFirstByValue($input['model']);
         }
 

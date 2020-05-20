@@ -24,8 +24,7 @@ final class PaginationResponse
         int $limit,
         array $acceptedParams,
         array $data
-    ): array
-    {
+    ): array {
         $params = self::paramStr($acceptedParams);
 
         $last = ($page->last) ?: 1; // if last is 0, use 1 instead

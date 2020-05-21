@@ -2,11 +2,17 @@
 
 namespace Rev\Controllers;
 
+use Phalcon\Mvc\Controller;
+use Phalcon\Paginator\Adapter\QueryBuilder as Paginator;
+
+use Rev\Models\UploaderModel;
+use Rev\Utils\PaginationResponse;
+
 /**
  * Class UploaderController
  * @package Rev\Controllers
  */
-class UploaderController extends \Phalcon\Mvc\Controller
+class UploaderController extends Controller
 {
     /**
      * @var int
@@ -23,7 +29,7 @@ class UploaderController extends \Phalcon\Mvc\Controller
      */
     public function get(int $id)
     {
-        $Uploader = \Rev\Models\UploaderModel::findFirstById($id);
+        $Uploader = UploaderModel::findFirstById($id);
 
         if (!$Uploader) {
             $this->response->setStatusCode(404);
@@ -74,19 +80,56 @@ class UploaderController extends \Phalcon\Mvc\Controller
      */
     public function search(): \Phalcon\Http\Response
     {
+        $prefix = '/uploaders';
+        $limit = $_GET['limit'] ?: 10;
+        $acceptedParams = [
+            'sort' => $_GET['sort'],
+            'name' => $_GET['name'],
+        ];
+
+        // Build
         $query = $this->modelsManager->createBuilder()
             ->columns('Rev\Models\UploaderModel.*')
             ->from('Rev\Models\UploaderModel');
 
-        $res = $query->getQuery()->execute();
-        $uploaders = [];
-        foreach ($res as $l) {
-            $Uploader = \Rev\Models\UploaderModel::findFirstById($l->id);
-            $uploaders[] = $Uploader->build();
+        if ($_GET['name']) {
+            $query = $query->where('Rev\Models\UploaderModel.name = :slug:', [
+                'name' => $_GET['name'],
+            ]);
+        }
+
+        // Handle sorting
+        if ($_GET['sort']) {
+            $sortBys = explode(',', $_GET['sort']);
+
+            foreach ($sortBys as $sortBy) {
+                $sortBy = explode(':', $sortBy);
+
+                // Special cases
+                if ($sortBy[0] == 'id') {
+                    $sortBy[0] = 'Rev\Models\UploaderModel.id';
+                }
+
+                $query = $query->orderBy($sortBy[0] . ' ' . $sortBy[1]);
+            }
+        }
+
+        // Pagination
+        $page = (new Paginator(
+            [
+                'builder'  => $query,
+                'limit' => $limit,
+                'page'  => $_GET['page'] ?: 1,
+            ]
+        ))->paginate();
+
+        $data = [];
+        foreach ($page->getItems() as $l) {
+            $data[] = $l->build();
         }
 
         $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($uploaders);
+        $this->response->setJsonContent(PaginationResponse::getResponse($prefix, $page, $limit, $acceptedParams, $data));
 
         return $this->response;
     }

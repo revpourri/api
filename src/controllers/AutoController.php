@@ -172,6 +172,22 @@ class AutoController extends Controller
             ]);
         }
 
+        // Handle sorting
+        if ($_GET['sort']) {
+            $sortBys = explode(',', $_GET['sort']);
+
+            foreach ($sortBys as $sortBy) {
+                $sortBy = explode(':', $sortBy);
+
+                // Special cases
+                if ($sortBy[0] == 'id') {
+                    $sortBy[0] = 'Rev\Models\AutoModel.id';
+                }
+
+                $query = $query->orderBy($sortBy[0] . ' ' . $sortBy[1]);
+            }
+        }
+
         // Pagination
         $page = (new Paginator(
             [

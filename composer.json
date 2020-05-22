@@ -20,7 +20,10 @@
   },
   "autoload": {
     "classmap": [
-      "."
+      "src/"
     ]
+  },
+  "require-dev": {
+    "codeception/codeception": "4.1.4"
   }
 }

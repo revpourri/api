@@ -7,7 +7,7 @@ $loader->registerDirs([
     $config->application->pluginsDir,
     $config->application->libraryDir,
     $config->application->modelsDir
-])->register();
+]);
 
 $loader->registerNamespaces(
     [
@@ -15,3 +15,5 @@ $loader->registerNamespaces(
         'Rev\Models'      => './models/',
     ]
 );
+
+$loader->register();

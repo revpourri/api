@@ -55,6 +55,14 @@ class ModelModel extends \Phalcon\Mvc\Model
     /**
      * @return bool
      */
+    public function beforeValidation(): bool
+    {
+        return $this->validation();
+    }
+
+    /**
+     * @return bool
+     */
     public function validation(): bool
     {
         $validator = new Validation();
@@ -62,7 +70,7 @@ class ModelModel extends \Phalcon\Mvc\Model
         $validator->add(
             'value',
             new PresenceOf([
-                'message' => "Model is required"
+                'message' => "Value is required"
             ])
         );
 

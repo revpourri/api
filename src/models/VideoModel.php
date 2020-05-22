@@ -7,6 +7,7 @@ use Rev\Utils\GenerateSlug;
 use Phalcon\Mvc\Model\Message;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
+use Phalcon\Validation\Validator\Date as DateValidator;
 
 /**
  * Class VideoModel
@@ -104,15 +105,17 @@ class VideoModel extends \Phalcon\Mvc\Model
     }
 
     /**
-     * @return void
+     * @return bool
      */
-    public function beforeValidation(): void
+    public function beforeValidation(): bool
     {
         if ($this->featured && ($this->featured == 'true' || $this->featured == '1')) {
             $this->featured = 1;
         } else {
             $this->featured = 0;
         }
+
+        return $this->validation();
     }
 
     /**
@@ -123,10 +126,39 @@ class VideoModel extends \Phalcon\Mvc\Model
         $validator = new Validation();
 
         $validator->add(
-            'title',
-            new PresenceOf([
-                'message' => "Title is required"
-            ])
+            [
+                'title',
+                'uploader_id',
+                'type',
+                'published_date',
+            ],
+            new PresenceOf(
+                [
+                    'message' => [
+                        'title' => "Title is required",
+                        'uploader_id' => "Uploader ID is required",
+                        'type' => "Type is required",
+                        'published_date' => "Published Date is required",
+                    ],
+                    'cancelOnFail' => true,
+                ]
+            )
+        );
+
+        $validator->add(
+            [
+                "published_date",
+            ],
+            new DateValidator(
+                [
+                    "format" => [
+                        "published_date" => "Y-m-d",
+                    ],
+                    "message" => [
+                        "published_date" => "Published Date is invalid",
+                    ],
+                ]
+            )
         );
 
         return $this->validate($validator);

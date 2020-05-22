@@ -5,6 +5,7 @@ namespace Rev\Models;
 use Phalcon\Mvc\Model\Message;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
+use Phalcon\Validation\Validator\Date as DateValidator;
 
 /**
  * Class AutoModel
@@ -56,22 +57,50 @@ class AutoModel extends \Phalcon\Mvc\Model
     /**
      * @return bool
      */
+    public function beforeValidation(): bool
+    {
+        return $this->validation();
+    }
+
+    /**
+     * @return bool
+     */
     public function validation(): bool
     {
         $validator = new Validation();
 
         $validator->add(
-            'model_id',
-            new PresenceOf([
-                'message' => "Model ID is required"
-            ])
+            [
+                'model_id',
+                'make_id',
+                'year',
+            ],
+            new PresenceOf(
+                [
+                    'message' => [
+                        'model_id' => "Model ID is required",
+                        'make_id' => "Make ID is required",
+                        'year' => "Year is required",
+                    ],
+                    'cancelOnFail' => true,
+                ]
+            )
         );
 
         $validator->add(
-            'make_id',
-            new PresenceOf([
-                'message' => "Make ID is required"
-            ])
+            [
+                "year",
+            ],
+            new DateValidator(
+                [
+                    "format" => [
+                        "year" => "Y",
+                    ],
+                    "message" => [
+                        "year" => "Year is invalid",
+                    ],
+                ]
+            )
         );
 
         return $this->validate($validator);

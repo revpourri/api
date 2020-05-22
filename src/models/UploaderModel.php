@@ -61,22 +61,32 @@ class UploaderModel extends \Phalcon\Mvc\Model
     /**
      * @return bool
      */
+    public function beforeValidation(): bool
+    {
+        return $this->validation();
+    }
+
+    /**
+     * @return bool
+     */
     public function validation(): bool
     {
         $validator = new Validation();
 
         $validator->add(
-            'name',
-            new PresenceOf([
-                'message' => "Name is required"
-            ])
-        );
-
-        $validator->add(
-            'youtube_id',
-            new PresenceOf([
-                'message' => "Youtube ID is required"
-            ])
+            [
+                'name',
+                'youtube_id',
+            ],
+            new PresenceOf(
+                [
+                    'message' => [
+                        'name' => "Name is required",
+                        'youtube_id' => "Youtube ID is required",
+                    ],
+                    'cancelOnFail' => true,
+                ]
+            )
         );
 
         return $this->validate($validator);

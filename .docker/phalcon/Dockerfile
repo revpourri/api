@@ -27,6 +27,13 @@ RUN cd && git clone https://github.com/jbboehr/php-psr.git && \
     echo "extension=psr.so" > $PHP_INI_DIR/conf.d/php-psr.ini && \
     cd /var/www/html/
 
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+RUN echo "extension=psr.so" > $PHP_INI_DIR/conf.d/xdebug.ini && \
+    echo "xdebug.remote_enable=on" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
+    echo "xdebug.remote_autostart=off" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
+    echo "xdebug.remote_port=9001" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
+    echo "xdebug.remote_handler=dbgp" >> $PHP_INI_DIR/conf.d/xdebug.ini
+
 # COPY docker-phalcon-* /usr/local/bin/
 # Required for GD
 RUN apt-get install -qq -y libpng-dev libjpeg-dev unzip

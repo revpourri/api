@@ -18,7 +18,7 @@ class AutoModel extends \Phalcon\Mvc\Model
     */
     public $id;
     /**
-    * @var int
+    * @var string
     */
     public $year;
     /**
@@ -115,7 +115,7 @@ class AutoModel extends \Phalcon\Mvc\Model
     {
         return [
             'id' => (int)$this->id,
-            'year' => (int)$this->year,
+            'year' => (string)$this->year,
             'model_id' => (int)$this->model_id,
             'make_id' => (int)$this->make_id,
         ];

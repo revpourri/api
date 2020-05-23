@@ -34,7 +34,7 @@ class Setup extends AbstractMigration
             ->create();
 
         $table = $this->table('autos', ['signed' => false]);
-        $table->addColumn('year', 'integer', ['signed' => false])
+        $table->addColumn('year', 'year')
             ->addColumn('make_id', 'integer', ['signed' => false])
             ->addColumn('model_id', 'integer', ['signed' => false])
             ->create();

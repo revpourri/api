@@ -7,7 +7,7 @@
 Parameter | Type | Description
 --------- | ---- | ----
 **id** | *integer* | Resource ID
-**year** | *integer* | Year of auto
+**year** | *string* | Year of auto
 **make** | *object* | Make object of auto
 **model** | *object* | Model object of auto
 
@@ -27,7 +27,7 @@ curl "https://api.revpourri.com/autos" \
 ```json
 {
     "id": 1,
-    "year": 2001,
+    "year": "2001",
     "make": {
         "id": 1,
         "value": "Honda",
@@ -49,9 +49,10 @@ curl "https://api.revpourri.com/autos" \
 
 Parameter | Type | Description
 --------- | ---- | ----
-**year** | *integer* | Year of auto
+**year** | *string* | Year of auto
 **make_id** | *integer* | Make ID
 **model_id** | *integer* | Model ID
+**model** | *string* | Model value
 
 ## Retrieve an Auto
 
@@ -69,7 +70,7 @@ curl "https://api.revpourri.com/autos/1" \
 ```json
 {
     "id": 1,
-    "year": 2001,
+    "year": "2001",
     "make": {
         "id": 1,
         "value": "Honda",
@@ -103,7 +104,7 @@ curl "https://api.revpourri.com/videos/1" \
 ```json
 {
     "id": 1,
-    "year": 2020,
+    "year": "2020",
     "make": {
         "id": 1,
         "value": "Honda",
@@ -125,7 +126,7 @@ curl "https://api.revpourri.com/videos/1" \
 
 Parameter | Type | Description
 --------- | ---- | ----
-**year** | *integer* | Year of auto
+**year** | *string* | Year of auto
 **make_id** | *integer* | Make ID
 **model_id** | *integer* | Model ID
 
@@ -155,7 +156,7 @@ curl "https://api.revpourri.com/autos" \
     "data": [
         {
             "id": 1,
-            "year": 2001,
+            "year": "2001",
             "make": {
                 "id": 1,
                 "value": "Honda",

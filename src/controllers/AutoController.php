@@ -79,8 +79,12 @@ class AutoController extends Controller
         if (!$Auto) {
             return $this->respondNotFound();
         }
+
+        $Auto->assign([
+            'year' => $this->input['year']
+        ]);
         
-        if (!$Auto->save($this->input)) {
+        if (!$Auto->update($this->input)) {
             return $this->respondBadRequest($Auto->getMessages());
         }
 

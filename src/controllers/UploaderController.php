@@ -55,10 +55,10 @@ class UploaderController extends Controller
      */
     public function search(): \Phalcon\Http\Response
     {
-        $limit = $_GET['limit'] ?: 10;
+        $limit = $_GET['limit'] ?? 10;
         $acceptedParams = [
-            'sort' => $_GET['sort'],
-            'name' => $_GET['name'],
+            'sort' => $_GET['sort'] ?? null,
+            'name' => $_GET['name'] ?? null,
         ];
 
         // Build
@@ -66,14 +66,14 @@ class UploaderController extends Controller
             ->columns('Rev\Models\UploaderModel.*')
             ->from('Rev\Models\UploaderModel');
 
-        if ($_GET['name']) {
+        if (isset($_GET['name'])) {
             $query = $query->where('Rev\Models\UploaderModel.name = :slug:', [
                 'name' => $_GET['name'],
             ]);
         }
 
         // Handle sorting
-        if ($_GET['sort']) {
+        if (isset($_GET['sort'])) {
             $sortBys = explode(',', $_GET['sort']);
 
             foreach ($sortBys as $sortBy) {

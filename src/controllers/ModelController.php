@@ -35,11 +35,11 @@ class ModelController extends Controller
      */
     public function search(): \Phalcon\Http\Response
     {
-        $limit = $_GET['limit'] ?: 100;
+        $limit = isset($_GET['limit']) ?: 100;
         $acceptedParams = [
-            'sort' => $_GET['sort'],
-            'make' => $_GET['make'],
-            'model' => $_GET['model'],
+            'sort' => $_GET['sort'] ?? null,
+            'make' => $_GET['make'] ?? null,
+            'model' => $_GET['model'] ?? null,
         ];
 
         $query = $this->modelsManager->createBuilder()
@@ -50,12 +50,12 @@ class ModelController extends Controller
             ->orderBy('Rev\Models\ModelModel.slug')
             ->groupBy('Rev\Models\ModelModel.id');
 
-        if ($_GET['make']) {
+        if (isset($_GET['make'])) {
             $query = $query->where("Rev\Models\MakeModel.slug = :slug:", [
                 'slug' => $_GET['make'],
             ]);
         }
-        if ($_GET['model']) {
+        if (isset($_GET['model'])) {
             $query = $query->where("Rev\Models\MakeModel.slug = :slug:", [
                 'slug' => $_GET['model'],
             ]);

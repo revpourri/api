@@ -50,16 +50,18 @@ class VideoController extends Controller
             return $this->respondBadRequest($Video->getMessages());
         }
 
-        foreach ($this->input['autos'] as $auto) {
-            $VideoAuto = (new VideoAutosModel())->assign([
-                'video_id' => $Video->id,
-                'auto_id' => $auto['id'],
-            ]);
-            $VideoAuto->save();
+        if (isset($this->input['autos'])) {
+            foreach ($this->input['autos'] as $auto) {
+                $VideoAuto = (new VideoAutosModel())->assign([
+                    'video_id' => $Video->id,
+                    'auto_id' => $auto['id'],
+                ]);
+                $VideoAuto->save();
+            }
         }
 
         // If project_id is passed, add to project
-        if ($this->input['project_id']) {
+        if (isset($this->input['project_id'])) {
             $lastSortOrder = \Rev\Models\ProjectVideosModel::find([
                 'conditions' => 'project_id = :project_id:',
                 'bind' => [
@@ -92,8 +94,18 @@ class VideoController extends Controller
         if (!$Video) {
             return $this->respondNotFound();
         }
+
+        $Video->assign($this->input, [
+            'title',
+            'youtube_id',
+            'uploader_id',
+            'published_date',
+            'type',
+            'featured',
+            'preview_video',
+        ]);
         
-        if (!$Video->save($this->input)) {
+        if (!$Video->update()) {
             return $this->respondBadRequest($Video->getMessages());
         }
 
@@ -122,14 +134,14 @@ class VideoController extends Controller
      */
     public function search(): \Phalcon\Http\Response
     {
-        $limit = $_GET['limit'] ?: 10;
+        $limit = isset($_GET['limit']) ?: 10;
         $acceptedParams = [
-            'sort' => $_GET['sort'],
-            'slug' => $_GET['slug'],
-            'make' => $_GET['make'],
-            'model' => $_GET['model'],
-            'type' => $_GET['type'],
-            'featured' => $_GET['featured'],
+            'sort' => $_GET['sort'] ?? null,
+            'slug' => $_GET['slug'] ?? null,
+            'make' => $_GET['make'] ?? null,
+            'model' => $_GET['model'] ?? null,
+            'type' => $_GET['type'] ?? null,
+            'featured' => $_GET['featured'] ?? null,
         ];
 
         // Build
@@ -141,30 +153,30 @@ class VideoController extends Controller
             ->join('Rev\Models\MakeModel', 'Rev\Models\AutoModel.make_id = Rev\Models\MakeModel.id')
             ->join('Rev\Models\ModelModel', 'Rev\Models\AutoModel.model_id = Rev\Models\ModelModel.id');
 
-        if ($_GET['make'] && $_GET['model']) {
+        if (isset($_GET['make']) && isset($_GET['model'])) {
             $query = $query->where("Rev\Models\MakeModel.slug = :makeslug: AND Rev\Models\ModelModel.slug = :modelslug:", [
                 'makeslug' => $_GET['make'],
                 'modelslug' => $_GET['model'],
             ]);
-        } elseif ($_GET['make']) {
+        } elseif (isset($_GET['make'])) {
             $query = $query->where('Rev\Models\MakeModel.slug = :slug:', [
                 'slug' => $_GET['make'],
             ]);
         }
 
-        if ($_GET['type']) {
+        if (isset($_GET['type'])) {
             $query = $query->andWhere('Rev\Models\VideoModel.type = :type:', [
                 'type' => $_GET['type'],
             ]);
         }
 
-        if ($_GET['slug']) {
+        if (isset($_GET['slug'])) {
             $query = $query->where('Rev\Models\VideoModel.slug = :slug:', [
                 'slug' => $_GET['slug'],
             ]);
         }
 
-        if ($_GET['featured']) {
+        if (isset($_GET['featured'])) {
             $query = $query->where('Rev\Models\VideoModel.featured = :featured:', [
                 'featured' => (in_array($_GET['featured'], ['true', '1'])) ? 1 : 0,
             ]);
@@ -173,7 +185,7 @@ class VideoController extends Controller
         $query = $query->groupBy('Rev\Models\VideoModel.id');
 
         // Handle sorting
-        if ($_GET['sort']) {
+        if (isset($_GET['sort'])) {
             $sortBys = explode(',', $_GET['sort']);
 
             foreach ($sortBys as $sortBy) {

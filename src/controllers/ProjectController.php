@@ -101,12 +101,12 @@ class ProjectController extends Controller
      */
     public function search(): \Phalcon\Http\Response
     {
-        $limit = $_GET['limit'] ?: 10;
+        $limit = $_GET['limit'] ?? 10;
         $acceptedParams = [
-            'sort' => $_GET['sort'],
-            'slug' => $_GET['slug'],
-            'make' => $_GET['make'],
-            'model' => $_GET['model'],
+            'sort' => $_GET['sort'] ?? null,
+            'slug' => $_GET['slug'] ?? null,
+            'make' => $_GET['make'] ?? null,
+            'model' => $_GET['model'] ?? null,
         ];
 
         // Build
@@ -117,18 +117,18 @@ class ProjectController extends Controller
             ->join('Rev\Models\MakeModel', 'Rev\Models\AutoModel.make_id = Rev\Models\MakeModel.id')
             ->join('Rev\Models\ModelModel', 'Rev\Models\AutoModel.model_id = Rev\Models\ModelModel.id');
 
-        if ($_GET['make'] && $_GET['model']) {
+        if (isset($_GET['make']) && isset($_GET['model'])) {
             $query = $query->where("Rev\Models\MakeModel.slug = :makeslug: AND Rev\Models\ModelModel.slug = :modelslug:", [
                 'makeslug' => $_GET['make'],
                 'modelslug' => $_GET['model'],
             ]);
-        } elseif ($_GET['make']) {
+        } elseif (isset($_GET['make'])) {
             $query = $query->where("Rev\Models\MakeModel.slug = :slug:", [
                 'slug' => $_GET['make'],
             ]);
         }
 
-        if ($_GET['slug']) {
+        if (isset($_GET['slug'])) {
             $query = $query->where('Rev\Models\ProjectModel.slug = :slug:', [
                 'slug' => $_GET['slug'],
             ]);
@@ -137,7 +137,7 @@ class ProjectController extends Controller
         $query = $query->groupBy('Rev\Models\ProjectModel.id');
 
         // Handle sorting
-        if ($_GET['sort']) {
+        if (isset($_GET['sort'])) {
             $sortBys = explode(',', $_GET['sort']);
 
             foreach ($sortBys as $sortBy) {

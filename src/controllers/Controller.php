@@ -20,10 +20,6 @@ class Controller extends PhController
     /**
      * @var array
      */
-    protected $return = [];
-    /**
-     * @var array
-     */
     public $input = [];
 
     /**

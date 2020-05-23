@@ -2,11 +2,8 @@
 
 namespace Rev\Controllers;
 
-use Phalcon\Mvc\Controller;
-use Phalcon\Paginator\Adapter\QueryBuilder as Paginator;
-
-use Rev\Utils\PaginationResponse;
 use Rev\Models\VideoModel;
+use Rev\Models\VideoAutosModel;
 
 /**
  * Class VideoController
@@ -15,13 +12,9 @@ use Rev\Models\VideoModel;
 class VideoController extends Controller
 {
     /**
-     * @var int
+     * @var string
      */
-    protected $code = 200;
-    /**
-     * @var array
-     */
-    protected $return = [];
+    public $prefix = '/videos';
 
     /**
      * @param int $id
@@ -32,16 +25,10 @@ class VideoController extends Controller
         $Video = VideoModel::findFirstById($id);
 
         if (!$Video) {
-            $this->response->setStatusCode(404);
-            return $this->response;
+            return $this->respondNotFound();
         }
 
-        $this->return = $Video->build();
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($this->return);
-
-        return $this->response;
+        return $this->respondSuccess($Video->build());
     }
 
     /**
@@ -49,9 +36,7 @@ class VideoController extends Controller
      */
     public function create(): \Phalcon\Http\Response
     {
-        $input = $this->request->getJsonRawBody(true);
-
-        $Video = (new VideoModel())->assign($input, [
+        $Video = (new VideoModel())->assign($this->input, [
             'title',
             'youtube_id',
             'uploader_id',
@@ -62,14 +47,10 @@ class VideoController extends Controller
         ]);
 
         if (!$Video->create()) {
-            $msgs = $Video->getMessages();
-            $this->return['message'] = $msgs[0]->getMessage();
-            $this->response->setJsonContent($this->return);
-
-            return $this->response;
+            return $this->respondBadRequest($Video->getMessages());
         }
 
-        foreach ($input['autos'] as $auto) {
+        foreach ($this->input['autos'] as $auto) {
             $VideoAuto = (new VideoAutosModel())->assign([
                 'video_id' => $Video->id,
                 'auto_id' => $auto['id'],
@@ -78,11 +59,11 @@ class VideoController extends Controller
         }
 
         // If project_id is passed, add to project
-        if ($input['project_id']) {
+        if ($this->input['project_id']) {
             $lastSortOrder = \Rev\Models\ProjectVideosModel::find([
                 'conditions' => 'project_id = :project_id:',
                 'bind' => [
-                    'project_id' => $input['project_id']
+                    'project_id' => $this->input['project_id']
                 ],
                 'order_by' => 'sort_order DESC',
                 'limit' => 1,
@@ -90,20 +71,14 @@ class VideoController extends Controller
 
             $sortOrder = ($lastSortOrder) ? $lastSortOrder->sort_order + 1 : 1;
 
-            $ProjectVideo = new \Rev\Models\ProjectVideosModel();
-            $ProjectVideo->save([
+            (new \Rev\Models\ProjectVideosModel())->save([
                 'video_id' => $Video->id,
-                'project_id' => $input['project_id'],
+                'project_id' => $this->input['project_id'],
                 'sort_order' => $sortOrder,
             ]);
         }
 
-        $this->return = $Video->build();
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($this->return);
-
-        return $this->response;
+        return $this->respondSuccess($Video->build());
     }
 
     /**
@@ -114,22 +89,15 @@ class VideoController extends Controller
     {
         $Video = VideoModel::findFirstById($id);
 
-        $input = $this->request->getJsonRawBody(true);
+        if (!$Video) {
+            return $this->respondNotFound();
+        }
         
-        if (!$Video->save($input)) {
-            $msgs = $Video->getMessages();
-            $this->return['message'] = $msgs[0]->getMessage();
-            $this->response->setJsonContent($this->return);
-
-            return $this->response;
+        if (!$Video->save($this->input)) {
+            return $this->respondBadRequest($Video->getMessages());
         }
 
-        $this->return = $Video->build();
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($this->return);
-
-        return $this->response;
+        return $this->respondSuccess($Video->build());
     }
 
     /**
@@ -140,11 +108,13 @@ class VideoController extends Controller
     {
         $Video = VideoModel::findFirstById($id);
 
+        if (!$Video) {
+            return $this->respondNotFound();
+        }
+
         $Video->delete();
 
-        $this->response->setStatusCode(204);
-
-        return $this->response;
+        return $this->respondNoContent();
     }
 
     /**
@@ -152,7 +122,6 @@ class VideoController extends Controller
      */
     public function search(): \Phalcon\Http\Response
     {
-        $prefix = '/videos';
         $limit = $_GET['limit'] ?: 10;
         $acceptedParams = [
             'sort' => $_GET['sort'],
@@ -219,23 +188,8 @@ class VideoController extends Controller
             }
         }
 
-        // Pagination
-        $page = (new Paginator(
-            [
-                'builder'  => $query,
-                'limit' => $limit,
-                'page'  => $_GET['page'] ?: 1,
-            ]
-        ))->paginate();
+        $data = $this->generatePaginatedData($query, $limit, $_GET['page'] ?? 1, $acceptedParams);
 
-        $data = [];
-        foreach ($page->getItems() as $l) {
-            $data[] = $l->build();
-        }
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent(PaginationResponse::getResponse($prefix, $page, $limit, $acceptedParams, $data));
-
-        return $this->response;
+        return $this->respondSuccess($data);
     }
 }

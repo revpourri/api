@@ -2,10 +2,6 @@
 
 namespace Rev\Controllers;
 
-use Phalcon\Mvc\Controller;
-use Phalcon\Paginator\Adapter\QueryBuilder as Paginator;
-
-use Rev\Utils\PaginationResponse;
 use Rev\Models\ModelModel as ModelModel;
 
 /**
@@ -15,13 +11,9 @@ use Rev\Models\ModelModel as ModelModel;
 class ModelController extends Controller
 {
     /**
-     * @var int
+     * @var string
      */
-    protected $code = 200;
-    /**
-     * @var array
-     */
-    protected $return = [];
+    public $prefix = '/models';
 
     /**
      * @param int $id
@@ -31,12 +23,11 @@ class ModelController extends Controller
     {
         $Model = ModelModel::findFirstById($id);
 
-        $this->return = $Model->build();
+        if (!$Model) {
+            return $this->respondNotFound();
+        }
 
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($this->return);
-
-        return $this->response;
+        return $this->respondSuccess($Model->build());
     }
 
     /**
@@ -44,7 +35,6 @@ class ModelController extends Controller
      */
     public function search(): \Phalcon\Http\Response
     {
-        $prefix = '/models';
         $limit = $_GET['limit'] ?: 100;
         $acceptedParams = [
             'sort' => $_GET['sort'],
@@ -71,23 +61,8 @@ class ModelController extends Controller
             ]);
         }
 
-        // Pagination
-        $page = (new Paginator(
-            [
-                'builder'  => $query,
-                'limit' => $limit,
-                'page'  => $_GET['page'] ?: 1,
-            ]
-        ))->paginate();
+        $data = $this->generatePaginatedData($query, $limit, $_GET['page'] ?? 1, $acceptedParams);
 
-        $data = [];
-        foreach ($page->getItems() as $l) {
-            $data[] = $l->build();
-        }
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent(PaginationResponse::getResponse($prefix, $page, $limit, $acceptedParams, $data));
-
-        return $this->response;
+        return $this->respondSuccess($data);
     }
 }

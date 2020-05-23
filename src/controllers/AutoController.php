@@ -2,10 +2,6 @@
 
 namespace Rev\Controllers;
 
-use Phalcon\Mvc\Controller;
-use Phalcon\Paginator\Adapter\QueryBuilder as Paginator;
-
-use Rev\Utils\PaginationResponse;
 use Rev\Models\AutoModel;
 use Rev\Models\MakeModel;
 use Rev\Models\ModelModel;
@@ -17,13 +13,9 @@ use Rev\Models\ModelModel;
 class AutoController extends Controller
 {
     /**
-     * @var int
+     * @var string
      */
-    protected $code = 200;
-    /**
-     * @var array
-     */
-    protected $return = [];
+    public $prefix = '/autos';
 
     /**
      * @param int $id
@@ -34,16 +26,10 @@ class AutoController extends Controller
         $Auto = AutoModel::findFirstById($id);
 
         if (!$Auto) {
-            $this->response->setStatusCode(404);
-            return $this->response;
+            return $this->respondNotFound();
         }
 
-        $this->return = $Auto->build();
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($this->return);
-
-        return $this->response;
+        return $this->respondSuccess($Auto->build());
     }
 
     /**
@@ -51,50 +37,35 @@ class AutoController extends Controller
      */
     public function create(): \Phalcon\Http\Response
     {
-        $input = $this->request->getJsonRawBody(true);
-
-        $Make = MakeModel::findFirstById($input['make_id']);
+        $Make = MakeModel::findFirstById($this->input['make_id']);
 
         $Model = null;
-        if ($input['model_id']) {
-            $Model = ModelModel::findFirstById($input['model_id']);
-        } elseif ($input['model']) {
-            $Model = ModelModel::findFirstByValue($input['model']);
+        if ($this->input['model_id']) {
+            $Model = ModelModel::findFirstById($this->input['model_id']);
+        } elseif ($this->input['model']) {
+            $Model = ModelModel::findFirstByValue($this->input['model']);
         }
 
         if (!$Model) {
             $Model = (new ModelModel())->assign([
-                'value' => $input['model']
+                'value' => $this->input['model']
             ]);
 
             if (!$Model->create()) {
-                $msgs = $Model->getMessages();
-                $this->return['message'] = $msgs[0]->getMessage();
-                $this->response->setJsonContent($this->return);
-
-                return $this->response;
+                return $this->respondBadRequest($Model->getMessages());
             }
         }
 
         $Auto = (new AutoModel())->assign([
-            'year' => $input['year'],
+            'year' => $this->input['year'],
             'model_id' => $Model->id,
             'make_id' => $Make->id,
         ]);
         if (!$Auto->create()) {
-            $msgs = $Auto->getMessages();
-            $this->return['message'] = $msgs[0]->getMessage();
-            $this->response->setJsonContent($this->return);
-
-            return $this->response;
+            return $this->respondBadRequest($Auto->getMessages());
         }
 
-        $this->return = $Auto->build();
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($this->return);
-
-        return $this->response;
+        return $this->respondSuccess($Auto->build());
     }
 
     /**
@@ -104,21 +75,16 @@ class AutoController extends Controller
     public function update(int $id): \Phalcon\Http\Response
     {
         $Auto = AutoModel::findFirstById($id);
-        
-        if (!$Auto->save($this->request->getJsonRawBody(true))) {
-            $messages = $Auto->getMessages();
-            $this->return['message'] = $messages[0]->getMessage();
-            $this->response->setJsonContent($this->return);
 
-            return $this->response;
+        if (!$Auto) {
+            return $this->respondNotFound();
+        }
+        
+        if (!$Auto->save($this->input)) {
+            return $this->respondBadRequest($Auto->getMessages());
         }
 
-        $this->return = $Auto->build();
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($this->return);
-
-        return $this->response;
+        return $this->respondSuccess($Auto->build());
     }
 
     /**
@@ -130,15 +96,12 @@ class AutoController extends Controller
         $Auto = AutoModel::findFirstById($id);
 
         if (!$Auto) {
-            $this->response->setStatusCode(404);
-            return $this->response;
+            return $this->respondNotFound();
         }
 
         $Auto->delete();
 
-        $this->response->setStatusCode(204);
-
-        return $this->response;
+        return $this->respondNoContent();
     }
 
     /**
@@ -146,12 +109,11 @@ class AutoController extends Controller
      */
     public function search(): \Phalcon\Http\Response
     {
-        $prefix = '/autos';
-        $limit = $_GET['limit'] ?: 10;
+        $limit = $_GET['limit'] ?? 10;
         $acceptedParams = [
-            'sort' => $_GET['sort'],
-            'make' => $_GET['make'],
-            'model' => $_GET['model'],
+            'sort' => $_GET['sort'] ?? null,
+            'make' => $_GET['make'] ?? null,
+            'model' => $_GET['model'] ?? null,
         ];
 
         // Build
@@ -161,19 +123,19 @@ class AutoController extends Controller
             ->join('Rev\Models\MakeModel', 'Rev\Models\AutoModel.make_id = Rev\Models\MakeModel.id')
             ->join('Rev\Models\ModelModel', 'Rev\Models\AutoModel.model_id = Rev\Models\ModelModel.id');
 
-        if ($_GET['make'] && $_GET['model']) {
+        if (isset($_GET['make']) && isset($_GET['model'])) {
             $query = $query->where("Rev\Models\MakeModel.slug LIKE :make_slug: AND Rev\Models\ModelModel.slug LIKE :model_slug:", [
                 'make_slug' => $_GET['make'] . '%',
                 'model_slug' => $_GET['model'] . '%',
             ]);
-        } elseif ($_GET['make']) {
+        } elseif (isset($_GET['make'])) {
             $query = $query->where('Rev\Models\MakeModel.slug LIKE :slug:', [
                 'slug' => $_GET['make'] . '%',
             ]);
         }
 
         // Handle sorting
-        if ($_GET['sort']) {
+        if (isset($_GET['sort']) && !empty($_GET['sort'])) {
             $sortBys = explode(',', $_GET['sort']);
 
             foreach ($sortBys as $sortBy) {
@@ -188,23 +150,8 @@ class AutoController extends Controller
             }
         }
 
-        // Pagination
-        $page = (new Paginator(
-            [
-                'builder'  => $query,
-                'limit' => $limit,
-                'page'  => $_GET['page'] ?: 1,
-            ]
-        ))->paginate();
+        $data = $this->generatePaginatedData($query, $limit, $_GET['page'] ?? 1, $acceptedParams);
 
-        $data = [];
-        foreach ($page->getItems() as $l) {
-            $data[] = $l->build();
-        }
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent(PaginationResponse::getResponse($prefix, $page, $limit, $acceptedParams, $data));
-
-        return $this->response;
+        return $this->respondSuccess($data);
     }
 }

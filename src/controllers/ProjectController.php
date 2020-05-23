@@ -2,10 +2,6 @@
 
 namespace Rev\Controllers;
 
-use Phalcon\Mvc\Controller;
-use Phalcon\Paginator\Adapter\QueryBuilder as Paginator;
-
-use Rev\Utils\PaginationResponse;
 use Rev\Models\ProjectModel;
 
 /**
@@ -15,13 +11,9 @@ use Rev\Models\ProjectModel;
 class ProjectController extends Controller
 {
     /**
-     * @var int
+     * @var string
      */
-    protected $code = 200;
-    /**
-     * @var array
-     */
-    protected $return = [];
+    public $prefix = '/projects';
 
     /**
      * @param int $id
@@ -32,16 +24,10 @@ class ProjectController extends Controller
         $Project = ProjectModel::findFirstById($id);
 
         if (!$Project) {
-            $this->response->setStatusCode(404);
-            return $this->response;
+            return $this->respondNotFound();
         }
 
-        $this->return = $Project->build();
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($this->return);
-
-        return $this->response;
+        return $this->respondSuccess($Project->build());
     }
 
     /**
@@ -49,10 +35,8 @@ class ProjectController extends Controller
      */
     public function create(): \Phalcon\Http\Response
     {
-        $input = $this->request->getJsonRawBody(true);
-
         $Project = (new ProjectModel())->assign(
-            $input,
+            $this->input,
             [
                 'name',
                 'uploader_id',
@@ -60,20 +44,11 @@ class ProjectController extends Controller
             ]
         );
         
-        if (!$Project->save($input)) {
-            $msgs = $Project->getMessages();
-            $this->return['message'] = $msgs[0]->getMessage();
-            $this->response->setJsonContent($this->return);
-
-            return $this->response;
+        if (!$Project->create()) {
+            return $this->respondBadRequest($Project->getMessages());
         }
 
-        $this->return = $Project->build();
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($this->return);
-
-        return $this->response;
+        return $this->respondSuccess($Project->build());
     }
 
     /**
@@ -84,10 +59,12 @@ class ProjectController extends Controller
     {
         $Project = ProjectModel::findFirstById($id);
 
-        $input = $this->request->getJsonRawBody(true);
+        if (!$Project) {
+            return $this->respondNotFound();
+        }
 
         $Project->assign(
-            $input,
+            $this->input,
             [
                 'name',
                 'uploader_id',
@@ -95,20 +72,11 @@ class ProjectController extends Controller
             ]
         );
 
-        if (!$Project->update($input)) {
-            $msgs = $Project->getMessages();
-            $this->return['message'] = $msgs[0]->getMessage();
-            $this->response->setJsonContent($this->return);
-
-            return $this->response;
+        if (!$Project->update()) {
+            return $this->respondBadRequest($Project->getMessages());
         }
 
-        $this->return = $Project->build();
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($this->return);
-
-        return $this->response;
+        return $this->respondSuccess($Project->build());
     }
 
     /**
@@ -119,11 +87,13 @@ class ProjectController extends Controller
     {
         $Project = ProjectModel::findFirstById($id);
 
+        if (!$Project) {
+            return $this->respondNotFound();
+        }
+
         $Project->delete();
 
-        $this->response->setStatusCode(204);
-
-        return $this->response;
+        return $this->respondNoContent();
     }
 
     /**
@@ -131,7 +101,6 @@ class ProjectController extends Controller
      */
     public function search(): \Phalcon\Http\Response
     {
-        $prefix = '/projects';
         $limit = $_GET['limit'] ?: 10;
         $acceptedParams = [
             'sort' => $_GET['sort'],
@@ -183,23 +152,8 @@ class ProjectController extends Controller
             }
         }
 
-        // Pagination
-        $page = (new Paginator(
-            [
-                'builder'  => $query,
-                'limit' => $limit,
-                'page'  => $_GET['page'] ?: 1,
-            ]
-        ))->paginate();
+        $data = $this->generatePaginatedData($query, $limit, $_GET['page'] ?? 1, $acceptedParams);
 
-        $data = [];
-        foreach ($page->getItems() as $l) {
-            $data[] = $l->build();
-        }
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent(PaginationResponse::getResponse($prefix, $page, $limit, $acceptedParams, $data));
-
-        return $this->response;
+        return $this->respondSuccess($data);
     }
 }

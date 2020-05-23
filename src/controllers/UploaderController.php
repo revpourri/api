@@ -2,11 +2,7 @@
 
 namespace Rev\Controllers;
 
-use Phalcon\Mvc\Controller;
-use Phalcon\Paginator\Adapter\QueryBuilder as Paginator;
-
 use Rev\Models\UploaderModel;
-use Rev\Utils\PaginationResponse;
 
 /**
  * Class UploaderController
@@ -15,13 +11,9 @@ use Rev\Utils\PaginationResponse;
 class UploaderController extends Controller
 {
     /**
-     * @var int
+     * @var string
      */
-    protected $code = 200;
-    /**
-     * @var array
-     */
-    protected $return = [];
+    public $prefix = '/uploaders';
 
     /**
      * @param int $id
@@ -32,16 +24,10 @@ class UploaderController extends Controller
         $Uploader = UploaderModel::findFirstById($id);
 
         if (!$Uploader) {
-            $this->response->setStatusCode(404);
-            return $this->response;
+            return $this->respondNotFound();
         }
 
-        $this->return = $Uploader->build();
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($this->return);
-
-        return $this->response;
+        return $this->respondSuccess($Uploader->build());
     }
 
     /**
@@ -49,10 +35,8 @@ class UploaderController extends Controller
      */
     public function create(): \Phalcon\Http\Response
     {
-        $input = $this->request->getJsonRawBody(true);
-
         $Uploader = (new UploaderModel())->assign(
-            $input,
+            $this->input,
             [
                 'name',
                 'youtube_id',
@@ -60,19 +44,10 @@ class UploaderController extends Controller
         );
 
         if (!$Uploader->create()) {
-            $msgs = $Uploader->getMessages();
-            $this->return['message'] = $msgs[0]->getMessage();
-            $this->response->setJsonContent($this->return);
-
-            return $this->response;
+            return $this->respondBadRequest($Uploader->getMessages());
         }
 
-        $this->return = $Uploader->build();
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent($this->return);
-
-        return $this->response;
+        return $this->respondSuccess($Uploader->build());
     }
 
     /**
@@ -80,7 +55,6 @@ class UploaderController extends Controller
      */
     public function search(): \Phalcon\Http\Response
     {
-        $prefix = '/uploaders';
         $limit = $_GET['limit'] ?: 10;
         $acceptedParams = [
             'sort' => $_GET['sort'],
@@ -114,23 +88,8 @@ class UploaderController extends Controller
             }
         }
 
-        // Pagination
-        $page = (new Paginator(
-            [
-                'builder'  => $query,
-                'limit' => $limit,
-                'page'  => $_GET['page'] ?: 1,
-            ]
-        ))->paginate();
+        $data = $this->generatePaginatedData($query, $limit, $_GET['page'] ?? 1, $acceptedParams);
 
-        $data = [];
-        foreach ($page->getItems() as $l) {
-            $data[] = $l->build();
-        }
-
-        $this->response->setStatusCode($this->code);
-        $this->response->setJsonContent(PaginationResponse::getResponse($prefix, $page, $limit, $acceptedParams, $data));
-
-        return $this->response;
+        return $this->respondSuccess($data);
     }
 }

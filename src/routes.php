@@ -50,7 +50,3 @@ $UploaderCollection->get('/{id:[0-9]+}', 'get');
 $UploaderCollection->post('/', 'create');
 $UploaderCollection->get('/', 'search');
 $app->mount($UploaderCollection);
-
-$app->notFound(function () use ($app) {
-    returnResponse($app, 404, null, 'Endpoint not found');
-});

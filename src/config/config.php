@@ -22,4 +22,5 @@ $settings = [
         "password" => getenv('DB_PASS') ?: 'pass',
         "database"   => getenv('DB_DATABASE') ?: 'rev_dev',
     ],
+    "key" => getenv('APP_KEY') ?: 'testkey',
 ];

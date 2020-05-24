@@ -1,10 +1,12 @@
 <?php
 
 use Phalcon\Config as Config;
+use Phalcon\Http\Request;
 
 require __DIR__ . '/../config/config.php';
 $config = new Config($settings);
 require __DIR__ . '/../config/loader.php';
+require __DIR__ . '/../config/auth.php';
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -64,13 +66,40 @@ $di->set('input', function () {
     return null;
 });
 
+$app->before(function () use ($app, $whitelisted, $config) {
+    $handler = $app->getActiveHandler();
+
+    // If whitelisted, you may pass
+    foreach ($whitelisted as $l) {
+        if ($handler[0] instanceof $l['class']) {
+            if (in_array($handler[1], $l['actions'])) {
+                return true;
+            }
+        }
+    }
+
+    if ($config->env == 'testing') {
+        return true;
+    }
+
+    // Check for auth bearer
+    $request = new Request();
+    $headers = $request->getHeaders();
+
+    if (isset($headers['Authorization'])) {
+        if ($headers['Authorization'] == 'Bearer ' . $config->key) {
+            return true;
+        }
+    }
+
+    $app->response->setStatusCode(403)->setContentType("application/json")->sendHeaders();
+    exit;
+});
+
 require __DIR__ . "/../routes.php";
 
 $app->notFound(function () use ($app) {
     $app->response->setStatusCode(404, "Not Found")->setContentType("application/json")->sendHeaders();
-    echo json_encode([
-        'message' => 'Endpoint not found.'
-    ]);
 });
 
 if (isset($_SERVER["REQUEST_URI"])) {

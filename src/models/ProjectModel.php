@@ -78,7 +78,7 @@ class ProjectModel extends \Phalcon\Mvc\Model
         }
 
         if ($this->name && !isset($this->slug)) {
-            $this->slug = GenerateSlug::getSlug($this->value, new ProjectModel());
+            $this->slug = GenerateSlug::getSlug($this->name, new ProjectModel());
         }
     }
 
@@ -107,7 +107,7 @@ class ProjectModel extends \Phalcon\Mvc\Model
         return [
             'id' => (int)$this->id,
             'name' => (string)$this->name,
-            'slug' => (string)'/project/' . $this->_uris[$this->type] . $this->slug,
+            'slug' => (string)$this->slug,
             'created_time' => date('c', strtotime($this->created_time)),
             'auto_id' => (string)$this->auto_id,
             'uploader_id' => (int)$this->uploader_id,

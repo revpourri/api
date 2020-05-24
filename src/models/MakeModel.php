@@ -26,6 +26,10 @@ class MakeModel extends \Phalcon\Mvc\Model
     * @var string
     */
     public $slug;
+    /**
+    * @var string
+    */
+    public $logo;
 
     /**
      * @return void
@@ -86,6 +90,7 @@ class MakeModel extends \Phalcon\Mvc\Model
             'id' => (int)$this->id,
             'value' => (string)$this->value,
             'slug' => (string)$this->slug,
+            'logo' => (string)$this->logo,
         ];
     }
 

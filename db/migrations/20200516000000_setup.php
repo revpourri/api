@@ -31,6 +31,7 @@ class Setup extends AbstractMigration
         $table = $this->table('makes', ['signed' => false]);
         $table->addColumn('value', 'string')
             ->addColumn('slug', 'string')
+            ->addColumn('logo', 'string')
             ->create();
 
         $table = $this->table('autos', ['signed' => false]);

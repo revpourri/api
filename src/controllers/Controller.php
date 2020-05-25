@@ -100,8 +100,14 @@ class Controller extends PhController
     {
         $this->response->setStatusCode(400);
 
+        $data = array_map(function ($a) {
+            return [
+                'field' => $a->getField(),
+                'message' => $a->getMessage(),
+            ]; }, $errors);
+
         $this->response->setJsonContent([
-            'errors' => $errors
+            'errors' => $data
         ]);
 
         return $this->response;

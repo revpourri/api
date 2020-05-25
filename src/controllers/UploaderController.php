@@ -67,7 +67,7 @@ class UploaderController extends Controller
             ->from('Rev\Models\UploaderModel');
 
         if (isset($_GET['name'])) {
-            $query = $query->where('Rev\Models\UploaderModel.name = :slug:', [
+            $query = $query->where('Rev\Models\UploaderModel.name = :name:', [
                 'name' => $_GET['name'],
             ]);
         }

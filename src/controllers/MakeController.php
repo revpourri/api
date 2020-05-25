@@ -35,19 +35,19 @@ class MakeController extends Controller
      */
     public function search(): \Phalcon\Http\Response
     {
-        $limit = isset($_GET['limit']) ?: 100;
+        $limit = $_GET['limit'] ?? 100;
         $acceptedParams = [
             'sort' => $_GET['sort'] ?? null,
-            'make' => $_GET['make'] ?? null,
+            'slug' => $_GET['slug'] ?? null,
         ];
 
         $query = $this->modelsManager->createBuilder()
             ->columns('Rev\Models\MakeModel.*')
             ->from('Rev\Models\MakeModel');
 
-        if (isset($_GET['make'])) {
-            $query = $query->where('Rev\Models\MakeModel.slug = :make:', [
-                'make' => $_GET['make'],
+        if (isset($_GET['slug'])) {
+            $query = $query->where('Rev\Models\MakeModel.slug = :slug:', [
+                'slug' => $_GET['slug'],
             ]);
         }
 

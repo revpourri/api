@@ -142,31 +142,4 @@ class ProjectModel extends \Phalcon\Mvc\Model
 
         return $obj;
     }
-
-    /**
-     * Generates a slug.  Removes all special characters, adds dashes for spaces
-     *
-     * @param $title
-     * @return string
-     */
-    private function generateSlug($title): string
-    {
-        $slug = trim(strtolower($title));
-        $slug = preg_replace("/[^a-z0-9_\s-]/", "", $slug);
-        $slug = preg_replace("/[\s-]+/", " ", $slug);
-        $slug = preg_replace("/[\s_]/", "-", $slug);
-
-        $l = ProjectModel::find([
-            'conditions' => 'slug = :slug:',
-            'bind' => [
-                'slug' => $slug
-            ]
-        ]);
-
-        if (count($l) > 0) {
-            $slug .= '-' . count($l);
-        }
-
-        return $slug;
-    }
 }

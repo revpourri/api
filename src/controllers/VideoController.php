@@ -71,7 +71,7 @@ class VideoController extends Controller
                 'limit' => 1,
             ]);
 
-            $sortOrder = ($lastSortOrder) ? $lastSortOrder->sort_order + 1 : 1;
+            $sortOrder = (count($lastSortOrder) > 0) ? $lastSortOrder->sort_order + 1 : 1;
 
             (new \Rev\Models\ProjectVideosModel())->save([
                 'video_id' => $Video->id,
@@ -134,7 +134,8 @@ class VideoController extends Controller
      */
     public function search(): \Phalcon\Http\Response
     {
-        $limit = isset($_GET['limit']) ?: 10;
+        $limit = $_GET['limit'] ?? 10;
+
         $acceptedParams = [
             'sort' => $_GET['sort'] ?? null,
             'slug' => $_GET['slug'] ?? null,
@@ -171,13 +172,13 @@ class VideoController extends Controller
         }
 
         if (isset($_GET['slug'])) {
-            $query = $query->where('Rev\Models\VideoModel.slug = :slug:', [
+            $query = $query->andWhere('Rev\Models\VideoModel.slug = :slug:', [
                 'slug' => $_GET['slug'],
             ]);
         }
 
         if (isset($_GET['featured'])) {
-            $query = $query->where('Rev\Models\VideoModel.featured = :featured:', [
+            $query = $query->andWhere('Rev\Models\VideoModel.featured = :featured:', [
                 'featured' => (in_array($_GET['featured'], ['true', '1'])) ? 1 : 0,
             ]);
         }

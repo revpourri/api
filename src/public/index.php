@@ -11,7 +11,7 @@ require __DIR__ . '/../config/auth.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 header("Content-Type: text/html; charset=ISO-8859-1");
-header('Access-Control-Allow-Headers: X-Requested-With, Content-Type, Accept, access-token');
+header('Access-Control-Allow-Headers: X-Requested-With, Content-Type, Accept, Authorization');
 header('Access-Control-Allow-Methods: GET, POST, DELETE');
 
 if (isset($_SERVER['HTTP_ORIGIN'])) {

@@ -35,4 +35,59 @@ class MakeControllerTest extends \BaseTest
 
         $this->assertTrue($res->getStatusCode() === 404);
     }
+
+    public function testSearchParamSort()
+    {
+        // create a couple makes
+        $this->createMake([
+            'value' => 'aaa',
+        ]);
+        $this->createMake([
+            'value' => 'zzz',
+        ]);
+
+        $_GET = [
+            'sort' => 'value:desc'
+        ];
+
+        $res = (new MakeController())->search();
+
+        $content = json_decode($res->getContent(), true);
+
+        $this->assertTrue($res->getStatusCode() === 200);
+        $this->assertTrue($content['data'][0]['value'] == 'zzz');
+
+        $_GET = [
+            'sort' => 'value:asc'
+        ];
+
+        $res = (new MakeController())->search();
+
+        $content = json_decode($res->getContent(), true);
+
+        $this->assertTrue($res->getStatusCode() === 200);
+        $this->assertTrue($content['data'][0]['value'] == 'aaa');
+    }
+
+    public function testSearchParamSlug()
+    {
+        // create a couple makes
+        $this->createMake([
+            'value' => 'aaa',
+        ]);
+        $this->createMake([
+            'value' => 'zzz',
+        ]);
+
+        $_GET = [
+            'slug' => 'zzz'
+        ];
+
+        $res = (new MakeController())->search();
+
+        $content = json_decode($res->getContent(), true);
+
+        $this->assertTrue($res->getStatusCode() === 200);
+        $this->assertTrue($content['data'][0]['slug'] == 'zzz');
+    }
 }

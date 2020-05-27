@@ -38,6 +38,18 @@ class AutoControllerTest extends \BaseTest
         $this->assertEquals($content->model->id, $model['id']);
     }
 
+    public function testCreateError()
+    {
+        $AutoController = new AutoController();
+        $AutoController->setInput([
+            'year' => null,
+        ]);
+        $res = $AutoController->create();
+        $content = json_decode($res->getContent());
+
+        $this->assertTrue($res->getStatusCode() === 400);
+    }
+
     public function testUpdate()
     {
         $auto = $this->createAuto();

@@ -37,6 +37,18 @@ class ProjectControllerTest extends \BaseTest
         $this->assertEquals($content->name, 'name');
     }
 
+    public function testCreateError()
+    {
+        $ProjectController = new ProjectController();
+        $ProjectController->setInput([
+            'name' => null,
+        ]);
+        $res = $ProjectController->create();
+        $content = json_decode($res->getContent());
+
+        $this->assertTrue($res->getStatusCode() === 400);
+    }
+
     public function testUpdate()
     {
         $project = $this->createProject();
@@ -83,5 +95,72 @@ class ProjectControllerTest extends \BaseTest
         $res = (new ProjectController())->delete(999999);
 
         $this->assertTrue($res->getStatusCode() === 404);
+    }
+
+    public function testSearchParamSort()
+    {
+        // create a couple makes
+        $auto = $this->createAuto();
+        $uploader = $this->createUploader();
+        $this->createProject([
+            'name' => 'aaa',
+            'auto_id' => $auto['id'],
+            'uploader_id' => $uploader['id'],
+        ]);
+        $this->createProject([
+            'name' => 'zzz',
+            'auto_id' => $auto['id'],
+            'uploader_id' => $uploader['id'],
+        ]);
+
+        $_GET = [
+            'sort' => 'name:desc'
+        ];
+
+        $res = (new ProjectController())->search();
+
+        $content = json_decode($res->getContent(), true);
+
+        $this->assertTrue($res->getStatusCode() === 200);
+        $this->assertTrue($content['data'][0]['name'] == 'zzz');
+
+        $_GET = [
+            'sort' => 'name:asc'
+        ];
+
+        $res = (new ProjectController())->search();
+
+        $content = json_decode($res->getContent(), true);
+
+        $this->assertTrue($res->getStatusCode() === 200);
+        $this->assertTrue($content['data'][0]['name'] == 'aaa');
+    }
+
+    public function testSearchParamSlug()
+    {
+        // create a couple makes
+        $auto = $this->createAuto();
+        $uploader = $this->createUploader();
+        $this->createProject([
+            'name' => 'aaa',
+            'auto_id' => $auto['id'],
+            'uploader_id' => $uploader['id'],
+        ]);
+        $this->createProject([
+            'name' => 'zzz',
+            'auto_id' => $auto['id'],
+            'uploader_id' => $uploader['id'],
+        ]);
+
+        $_GET = [
+            'slug' => 'zzz'
+        ];
+
+        $res = (new ProjectController())->search();
+
+        $content = json_decode($res->getContent(), true);
+
+        $this->assertTrue($res->getStatusCode() === 200);
+        $this->assertTrue($content['data'][0]['slug'] == 'zzz');
     }
 }

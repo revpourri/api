@@ -36,6 +36,34 @@ class VideoControllerTest extends \BaseTest
 
         $this->assertTrue($res->getStatusCode() === 200);
         $this->assertEquals($content->title, 'title');
+
+        // Create video, add to project
+        $project = $this->createProject();
+        $VideoController = new VideoController();
+        $VideoController->setInput([
+            'title' => 'title2',
+            'youtube_id' => 'youtube_id2',
+            'uploader_id' => $uploader['id'],
+            'published_date' => '2000-01-01',
+            'type' => 'project',
+            'project_id' => $project['id'],
+        ]);
+        $res = $VideoController->create();
+        $content = json_decode($res->getContent());
+
+        $this->assertTrue($res->getStatusCode() === 200);
+    }
+
+    public function testCreateError()
+    {
+        $VideoController = new VideoController();
+        $VideoController->setInput([
+            'title' => null,
+        ]);
+        $res = $VideoController->create();
+        $content = json_decode($res->getContent());
+
+        $this->assertTrue($res->getStatusCode() === 400);
     }
 
     public function testUpdate()

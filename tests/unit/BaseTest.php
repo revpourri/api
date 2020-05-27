@@ -2,43 +2,59 @@
 
 class BaseTest extends \Codeception\Test\Unit
 {
-    public function createUploader()
+    public function createUploader($data = null)
     {
-        $arr = (new Rev\Models\UploaderModel())->assign([
-            'name' => 'Uploader',
-            'youtube_id' => 'youtube_id',
-        ]);
+        if (!$data) {
+            $data = [
+                'name' => 'Uploader',
+                'youtube_id' => 'youtube_id',
+            ];
+        }
+
+        $arr = (new Rev\Models\UploaderModel())->assign($data);
         $arr->create();
         return $arr->toArray();
     }
 
-    public function createMake()
+    public function createMake($data = null)
     {
-        $arr = (new Rev\Models\MakeModel())->assign([
-            'value' => 'Make',
-        ]);
+        if (!$data) {
+            $data = [
+                'value' => 'Make',
+            ];
+        }
+
+        $arr = (new Rev\Models\MakeModel())->assign($data);
         $arr->create();
         return $arr->toArray();
     }
 
-    public function createModel()
+    public function createModel($data = null)
     {
-        $arr = (new Rev\Models\ModelModel())->assign([
-            'value' => 'Model',
-        ]);
+        if (!$data) {
+            $data = [
+                'value' => 'Model',
+            ];
+        }
+
+        $arr = (new Rev\Models\ModelModel())->assign($data);
         $arr->create();
         return $arr->toArray();
     }
 
-    public function createProject()
+    public function createProject($data = null)
     {
-        $auto = $this->createAuto();
-        $uploader = $this->createUploader();
-        $arr = (new Rev\Models\ProjectModel())->assign([
-            'name' => 'name',
-            'auto_id' => $auto['id'],
-            'uploader_id' => $uploader['id'],
-        ]);
+        if (!$data) {
+            $auto = $this->createAuto();
+            $uploader = $this->createUploader();
+            $data = [
+                'name' => 'name',
+                'auto_id' => $auto['id'],
+                'uploader_id' => $uploader['id'],
+            ];
+        }
+
+        $arr = (new Rev\Models\ProjectModel())->assign($data);
         $arr->create();
 
         return $arr->toArray();

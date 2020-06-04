@@ -2,7 +2,7 @@
 
 namespace Rev\Models;
 
-use Phalcon\Mvc\Model\Message;
+use Phalcon\Mvc\Model;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
 
@@ -10,33 +10,36 @@ use Rev\Utils\GenerateSlug;
 
 /**
  * Class ProjectModel
- * @package Rev\Models
+ *
+ * @package  Rev\Models
+ * @property AutoModel Auto
+ * @property UploaderModel Uploader
  */
-class ProjectModel extends \Phalcon\Mvc\Model
+class ProjectModel extends Model
 {
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $id;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $name;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $slug;
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $uploader_id;
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $auto_id;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $created_time;
 
     /**
@@ -91,9 +94,11 @@ class ProjectModel extends \Phalcon\Mvc\Model
 
         $validator->add(
             'name',
-            new PresenceOf([
+            new PresenceOf(
+                [
                 'message' => "Name is required"
-            ])
+                ]
+            )
         );
 
         return $this->validate($validator);
@@ -125,20 +130,16 @@ class ProjectModel extends \Phalcon\Mvc\Model
 
         $obj = $this->baseObj();
 
-        if ($this->Uploader) {
-            $obj['uploader'] = $this->Uploader->build();
-        }
+        $obj['uploader'] = $this->Uploader ? $this->Uploader->build() : null;
 
-        if ($this->Auto) {
-            $obj['auto'] = $this->Auto->build();
-        }
+        $obj['auto'] = $this->Auto ? $this->Auto->build() : null;
 
-        $videos = [];
+        $obj['videos'] = [];
         foreach ($this->ProjectVideos as $ProjectVideo) {
-            $videos[] = $ProjectVideo->Video->build();
+            $obj['videos'][] = $ProjectVideo->Video->build();
         }
 
-        $obj['videos'] = $videos;
+        unset($obj['uploader_id']);
 
         return $obj;
     }

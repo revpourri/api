@@ -2,10 +2,13 @@
 
 namespace Rev\Controllers;
 
+use Phalcon\Http\Response;
+
 use Rev\Models\ProjectModel;
 
 /**
  * Class ProjectController
+ *
  * @package Rev\Controllers
  */
 class ProjectController extends Controller
@@ -16,14 +19,12 @@ class ProjectController extends Controller
     public $prefix = '/projects';
 
     /**
-     * @param int $id
-     * @return \Phalcon\Http\Response
+     * @param  int $id
+     * @return Response
      */
-    public function get(int $id): \Phalcon\Http\Response
+    public function get(int $id): Response
     {
-        $Project = ProjectModel::findFirstById($id);
-
-        if (!$Project) {
+        if (!$Project = ProjectModel::findFirstById($id)) {
             return $this->respondNotFound();
         }
 
@@ -31,9 +32,9 @@ class ProjectController extends Controller
     }
 
     /**
-     * @return \Phalcon\Http\Response
+     * @return Response
      */
-    public function create(): \Phalcon\Http\Response
+    public function create(): Response
     {
         $Project = (new ProjectModel())->assign(
             $this->input,
@@ -52,14 +53,12 @@ class ProjectController extends Controller
     }
 
     /**
-     * @param int $id
-     * @return \Phalcon\Http\Response
+     * @param  int $id
+     * @return Response
      */
-    public function update(int $id): \Phalcon\Http\Response
+    public function update(int $id): Response
     {
-        $Project = ProjectModel::findFirstById($id);
-
-        if (!$Project) {
+        if (!$Project = ProjectModel::findFirstById($id)) {
             return $this->respondNotFound();
         }
 
@@ -80,14 +79,12 @@ class ProjectController extends Controller
     }
 
     /**
-     * @param int $id
-     * @return \Phalcon\Http\Response
+     * @param  int $id
+     * @return Response
      */
-    public function delete(int $id): \Phalcon\Http\Response
+    public function delete(int $id): Response
     {
-        $Project = ProjectModel::findFirstById($id);
-
-        if (!$Project) {
+        if (!$Project = ProjectModel::findFirstById($id)) {
             return $this->respondNotFound();
         }
 
@@ -97,9 +94,9 @@ class ProjectController extends Controller
     }
 
     /**
-     * @return \Phalcon\Http\Response
+     * @return Response
      */
-    public function search(): \Phalcon\Http\Response
+    public function search(): Response
     {
         $limit = $_GET['limit'] ?? 10;
         $acceptedParams = [
@@ -118,20 +115,26 @@ class ProjectController extends Controller
             ->join('Rev\Models\ModelModel', 'Rev\Models\AutoModel.model_id = Rev\Models\ModelModel.id');
 
         if (isset($_GET['make']) && isset($_GET['model'])) {
-            $query = $query->where("Rev\Models\MakeModel.slug = :makeslug: AND Rev\Models\ModelModel.slug = :modelslug:", [
-                'makeslug' => $_GET['make'],
-                'modelslug' => $_GET['model'],
-            ]);
+            $query = $query->where(
+                "Rev\Models\MakeModel.slug = :makeSlug: AND Rev\Models\ModelModel.slug = :modelSlug:", [
+                'makeSlug' => $_GET['make'],
+                'modelSlug' => $_GET['model'],
+                ]
+            );
         } elseif (isset($_GET['make'])) {
-            $query = $query->where("Rev\Models\MakeModel.slug = :slug:", [
+            $query = $query->where(
+                "Rev\Models\MakeModel.slug = :slug:", [
                 'slug' => $_GET['make'],
-            ]);
+                ]
+            );
         }
 
         if (isset($_GET['slug'])) {
-            $query = $query->where('Rev\Models\ProjectModel.slug = :slug:', [
+            $query = $query->where(
+                'Rev\Models\ProjectModel.slug = :slug:', [
                 'slug' => $_GET['slug'],
-            ]);
+                ]
+            );
         }
 
         $query = $query->groupBy('Rev\Models\ProjectModel.id');

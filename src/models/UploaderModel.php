@@ -2,27 +2,28 @@
 
 namespace Rev\Models;
 
-use Phalcon\Mvc\Model\Message;
+use Phalcon\Mvc\Model;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
 
 /**
  * Class UploaderModel
+ *
  * @package Rev\Models
  */
-class UploaderModel extends \Phalcon\Mvc\Model
+class UploaderModel extends Model
 {
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $id;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $name;
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $youtube_id;
     /**
      * @var string
@@ -116,8 +117,6 @@ class UploaderModel extends \Phalcon\Mvc\Model
             return [];
         }
 
-        $obj = $this->baseObj();
-
-        return $obj;
+        return $this->baseObj();
     }
 }

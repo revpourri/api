@@ -2,10 +2,13 @@
 
 namespace Rev\Controllers;
 
+use Phalcon\Http\Response;
+
 use Rev\Models\MakeModel as MakeModel;
 
 /**
  * Class MakeController
+ *
  * @package Rev\Controllers
  */
 class MakeController extends Controller
@@ -16,14 +19,12 @@ class MakeController extends Controller
     public $prefix = '/makes';
 
     /**
-     * @param int $id
-     * @return \Phalcon\Http\Response
+     * @param  int $id
+     * @return Response
      */
-    public function get(int $id): \Phalcon\Http\Response
+    public function get(int $id): Response
     {
-        $Make = MakeModel::findFirstById($id);
-
-        if (!$Make) {
+        if (!$Make = MakeModel::findFirstById($id)) {
             return $this->respondNotFound();
         }
 
@@ -31,9 +32,9 @@ class MakeController extends Controller
     }
 
     /**
-     * @return \Phalcon\Http\Response
+     * @return Response
      */
-    public function search(): \Phalcon\Http\Response
+    public function search(): Response
     {
         $limit = $_GET['limit'] ?? 100;
         $acceptedParams = [
@@ -46,9 +47,11 @@ class MakeController extends Controller
             ->from('Rev\Models\MakeModel');
 
         if (isset($_GET['slug'])) {
-            $query = $query->where('Rev\Models\MakeModel.slug = :slug:', [
+            $query = $query->where(
+                'Rev\Models\MakeModel.slug = :slug:', [
                 'slug' => $_GET['slug'],
-            ]);
+                ]
+            );
         }
 
         // Handle sorting

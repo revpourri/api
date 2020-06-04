@@ -22,16 +22,13 @@ final class GenerateSlug
         $slug = preg_replace("/[\s-]+/", " ", $slug);
         $slug = preg_replace("/[\s_]/", "-", $slug);
 
-        $count = 0;
         for ($count = 0; $count < 10; $count++) {
-            $l = $model::findFirst([
+            if (!$model::findFirst([
                 'conditions' => 'slug = :slug:',
                 'bind' => [
                     'slug' => $slug . (($count > 0) ? '-' . $count : '')
                 ]
-            ]);
-
-            if (!$l) {
+            ])) {
                 $slug = $slug . (($count > 0) ? '-' . $count : '');
                 break;
             }

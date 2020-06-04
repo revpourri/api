@@ -2,30 +2,35 @@
 
 namespace Rev\Models;
 
-use Phalcon\Mvc\Model\Message;
+use Phalcon\Mvc\Model;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
 
 /**
  * Class VideoAutosModel
- * @package Rev\Models
+ *
+ * @package  Rev\Models
+ * @property AutoModel Auto
+ * @property VideoModel Video
  */
-class VideoAutosModel extends \Phalcon\Mvc\Model
+class VideoAutosModel extends Model
 {
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $id;
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $video_id;
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $auto_id;
 
     /**
+     * Initialize
+     *
      * @return void
      */
     public function initialize(): void
@@ -45,13 +50,6 @@ class VideoAutosModel extends \Phalcon\Mvc\Model
             'id',
             ['foreignKey' => true, 'alias' => 'Auto']
         );
-
-        $this->hasMany(
-            'id',
-            '\Rev\Models\VideoAutoTagsModel',
-            'video_auto_id',
-            ['foreignKey' => true, 'alias' => 'VideoAutoTags']
-        );
     }
 
     /**
@@ -63,16 +61,20 @@ class VideoAutosModel extends \Phalcon\Mvc\Model
 
         $validator->add(
             'video_id',
-            new PresenceOf([
+            new PresenceOf(
+                [
                 'message' => "Video ID is required"
-            ])
+                ]
+            )
         );
 
         $validator->add(
             'auto_id',
-            new PresenceOf([
+            new PresenceOf(
+                [
                 'message' => "Auto ID is required"
-            ])
+                ]
+            )
         );
 
         return $this->validate($validator);
@@ -99,8 +101,6 @@ class VideoAutosModel extends \Phalcon\Mvc\Model
             return [];
         }
 
-        $obj = $this->baseObj();
-
-        return $obj;
+        return $this->baseObj();
     }
 }

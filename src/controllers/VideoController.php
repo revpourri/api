@@ -2,11 +2,15 @@
 
 namespace Rev\Controllers;
 
+use Phalcon\Http\Response;
+
+use \Rev\Models\ProjectVideosModel;
 use Rev\Models\VideoModel;
 use Rev\Models\VideoAutosModel;
 
 /**
  * Class VideoController
+ *
  * @package Rev\Controllers
  */
 class VideoController extends Controller
@@ -18,13 +22,12 @@ class VideoController extends Controller
 
     /**
      * @param int $id
-     * @return \Phalcon\Http\Response
+     *
+     * @return Response
      */
-    public function get(int $id): \Phalcon\Http\Response
+    public function get(int $id): Response
     {
-        $Video = VideoModel::findFirstById($id);
-
-        if (!$Video) {
+        if (!$Video = VideoModel::findFirstById($id)) {
             return $this->respondNotFound();
         }
 
@@ -32,19 +35,21 @@ class VideoController extends Controller
     }
 
     /**
-     * @return \Phalcon\Http\Response
+     * @return Response
      */
-    public function create(): \Phalcon\Http\Response
+    public function create(): Response
     {
-        $Video = (new VideoModel())->assign($this->input, [
-            'title',
-            'youtube_id',
-            'uploader_id',
-            'published_date',
-            'type',
-            'featured',
-            'preview_video',
-        ]);
+        $Video = (new VideoModel())->assign(
+            $this->input, [
+                'title',
+                'youtube_id',
+                'uploader_id',
+                'published_date',
+                'type',
+                'featured',
+                'preview_video',
+            ]
+        );
 
         if (!$Video->create()) {
             return $this->respondBadRequest($Video->getMessages());
@@ -52,32 +57,38 @@ class VideoController extends Controller
 
         if (isset($this->input['autos'])) {
             foreach ($this->input['autos'] as $auto) {
-                $VideoAuto = (new VideoAutosModel())->assign([
-                    'video_id' => $Video->id,
-                    'auto_id' => $auto['id'],
-                ]);
+                $VideoAuto = (new VideoAutosModel())->assign(
+                    [
+                        'video_id' => $Video->id,
+                        'auto_id' => $auto['id'],
+                    ]
+                );
                 $VideoAuto->save();
             }
         }
 
         // If project_id is passed, add to project
         if (isset($this->input['project_id'])) {
-            $lastSortOrder = \Rev\Models\ProjectVideosModel::find([
-                'conditions' => 'project_id = :project_id:',
-                'bind' => [
-                    'project_id' => $this->input['project_id']
-                ],
-                'order_by' => 'sort_order DESC',
-                'limit' => 1,
-            ]);
+            $lastSortOrder = ProjectVideosModel::find(
+                [
+                    'conditions' => 'project_id = :project_id:',
+                    'bind' => [
+                        'project_id' => $this->input['project_id']
+                    ],
+                    'order_by' => 'sort_order DESC',
+                    'limit' => 1,
+                ]
+            );
 
             $sortOrder = (count($lastSortOrder) > 0) ? $lastSortOrder->sort_order + 1 : 1;
 
-            (new \Rev\Models\ProjectVideosModel())->save([
-                'video_id' => $Video->id,
-                'project_id' => $this->input['project_id'],
-                'sort_order' => $sortOrder,
-            ]);
+            (new ProjectVideosModel())->save(
+                [
+                    'video_id' => $Video->id,
+                    'project_id' => $this->input['project_id'],
+                    'sort_order' => $sortOrder,
+                ]
+            );
         }
 
         return $this->respondSuccess($Video->build());
@@ -85,26 +96,27 @@ class VideoController extends Controller
 
     /**
      * @param int $id
-     * @return \Phalcon\Http\Response
+     *
+     * @return Response
      */
-    public function update(int $id): \Phalcon\Http\Response
+    public function update(int $id): Response
     {
-        $Video = VideoModel::findFirstById($id);
-
-        if (!$Video) {
+        if (!$Video = VideoModel::findFirstById($id)) {
             return $this->respondNotFound();
         }
 
-        $Video->assign($this->input, [
-            'title',
-            'youtube_id',
-            'uploader_id',
-            'published_date',
-            'type',
-            'featured',
-            'preview_video',
-        ]);
-        
+        $Video->assign(
+            $this->input, [
+                'title',
+                'youtube_id',
+                'uploader_id',
+                'published_date',
+                'type',
+                'featured',
+                'preview_video',
+            ]
+        );
+
         if (!$Video->update()) {
             return $this->respondBadRequest($Video->getMessages());
         }
@@ -114,9 +126,10 @@ class VideoController extends Controller
 
     /**
      * @param int $id
-     * @return \Phalcon\Http\Response
+     *
+     * @return Response
      */
-    public function delete(int $id): \Phalcon\Http\Response
+    public function delete(int $id): Response
     {
         $Video = VideoModel::findFirstById($id);
 
@@ -130,9 +143,9 @@ class VideoController extends Controller
     }
 
     /**
-     * @return \Phalcon\Http\Response
+     * @return Response
      */
-    public function search(): \Phalcon\Http\Response
+    public function search(): Response
     {
         $limit = $_GET['limit'] ?? 10;
 
@@ -155,32 +168,42 @@ class VideoController extends Controller
             ->join('Rev\Models\ModelModel', 'Rev\Models\AutoModel.model_id = Rev\Models\ModelModel.id');
 
         if (isset($_GET['make']) && isset($_GET['model'])) {
-            $query = $query->where("Rev\Models\MakeModel.slug = :makeslug: AND Rev\Models\ModelModel.slug = :modelslug:", [
-                'makeslug' => $_GET['make'],
-                'modelslug' => $_GET['model'],
-            ]);
+            $query = $query->where(
+                "Rev\Models\MakeModel.slug = :makeSlug: AND Rev\Models\ModelModel.slug = :modelSlug:", [
+                    'makeSlug' => $_GET['make'],
+                    'modelSlug' => $_GET['model'],
+                ]
+            );
         } elseif (isset($_GET['make'])) {
-            $query = $query->where('Rev\Models\MakeModel.slug = :slug:', [
-                'slug' => $_GET['make'],
-            ]);
+            $query = $query->where(
+                'Rev\Models\MakeModel.slug = :slug:', [
+                    'slug' => $_GET['make'],
+                ]
+            );
         }
 
         if (isset($_GET['type'])) {
-            $query = $query->andWhere('Rev\Models\VideoModel.type = :type:', [
-                'type' => $_GET['type'],
-            ]);
+            $query = $query->andWhere(
+                'Rev\Models\VideoModel.type = :type:', [
+                    'type' => $_GET['type'],
+                ]
+            );
         }
 
         if (isset($_GET['slug'])) {
-            $query = $query->andWhere('Rev\Models\VideoModel.slug = :slug:', [
-                'slug' => $_GET['slug'],
-            ]);
+            $query = $query->andWhere(
+                'Rev\Models\VideoModel.slug = :slug:', [
+                    'slug' => $_GET['slug'],
+                ]
+            );
         }
 
         if (isset($_GET['featured'])) {
-            $query = $query->andWhere('Rev\Models\VideoModel.featured = :featured:', [
-                'featured' => (in_array($_GET['featured'], ['true', '1'])) ? 1 : 0,
-            ]);
+            $query = $query->andWhere(
+                'Rev\Models\VideoModel.featured = :featured:', [
+                    'featured' => (in_array($_GET['featured'], ['true', '1'])) ? 1 : 0,
+                ]
+            );
         }
 
         $query = $query->groupBy('Rev\Models\VideoModel.id');
@@ -193,11 +216,11 @@ class VideoController extends Controller
                 $sortBy = explode(':', $sortBy);
 
                 // Special cases
-                if ($sortBy[0] == 'id') {
-                    $sortBy[0] = 'Rev\Models\VideoModel.id';
-                }
+                //                if ($sortBy[0] == 'id') {
+                //                    $sortBy[0] = 'Rev\Models\VideoModel.id';
+                //                }
 
-                $query = $query->orderBy($sortBy[0] . ' ' . $sortBy[1]);
+                $query = $query->orderBy($sortBy[0] . ' ' . $sortBy[1] . ', Rev\Models\VideoModel.id ' . $sortBy[1]);
             }
         }
 

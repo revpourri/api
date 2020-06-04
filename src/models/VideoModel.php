@@ -4,61 +4,64 @@ namespace Rev\Models;
 
 use Rev\Utils\GenerateSlug;
 
-use Phalcon\Mvc\Model\Message;
+use Phalcon\Mvc\Model;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
 use Phalcon\Validation\Validator\Date as DateValidator;
 
 /**
  * Class VideoModel
- * @package Rev\Models
+ *
+ * @package  Rev\Models
+ * @property UploaderModel Uploader
+ * @property VideoAutosModel VideoAutos
  */
-class VideoModel extends \Phalcon\Mvc\Model
+class VideoModel extends Model
 {
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $id;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $title;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $slug;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $youtube_id;
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $uploader_id;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $created_time;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $published_date;
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $type;
     /**
-    * @var bool
-    */
+     * @var bool
+     */
     public $featured;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $preview_video;
 
     /**
-    * @var array
-    */
+     * @var array
+     */
     protected $_types = [
         '1' => 'review',
         '2' => 'project',
@@ -194,15 +197,11 @@ class VideoModel extends \Phalcon\Mvc\Model
 
         $obj = $this->baseObj();
 
-        if ($this->Uploader) {
-            $obj['uploader'] = $this->Uploader->build();
-        }
+        $obj['uploader'] = $this->Uploader ? $this->Uploader->build() : null;
 
         $obj['autos'] = [];
-        foreach ($this->VideoAutos as $VideoAuto) {
-            $auto = $VideoAuto->Auto->build();
-
-            $obj['autos'][] = $auto;
+        foreach ($this->VideoAutos ?? [] as $VideoAuto) {
+            $obj['autos'][] = $VideoAuto->Auto->build();
         }
 
         return $obj;

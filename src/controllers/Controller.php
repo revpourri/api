@@ -2,13 +2,16 @@
 
 namespace Rev\Controllers;
 
+use Phalcon\Http\Response;
 use Phalcon\Mvc\Controller as PhController;
+use Phalcon\Mvc\Model\Query\Builder as QueryBuilder;
 use Phalcon\Paginator\Adapter\QueryBuilder as Paginator;
 
 use Rev\Utils\PaginationResponse;
 
 /**
  * Class Controller
+ *
  * @package Rev\Controllers
  */
 class Controller extends PhController
@@ -34,6 +37,8 @@ class Controller extends PhController
 
     /**
      * @param array $data
+     *
+     * @return void
      */
     public function setInput(array $data): void
     {
@@ -41,19 +46,19 @@ class Controller extends PhController
     }
 
     /**
-     * @param \Phalcon\Mvc\Model\Query\Builder $query
-     * @param int $limit
-     * @param int $page
-     * @param array|null $acceptedParams
+     * @param QueryBuilder $query
+     * @param int          $limit
+     * @param int          $page
+     * @param array|null   $acceptedParams
+     *
      * @return array
      */
     public function generatePaginatedData(
-        \Phalcon\Mvc\Model\Query\Builder $query,
+        QueryBuilder $query,
         int $limit,
         int $page = 1,
         array $acceptedParams = null
-    ): array
-    {
+    ): array {
         $paginator = (new Paginator(
             [
                 'builder'  => $query,
@@ -72,9 +77,10 @@ class Controller extends PhController
 
     /**
      * @param array $data
-     * @return \Phalcon\Http\Response
+     *
+     * @return Response
      */
-    public function respondSuccess(array $data): \Phalcon\Http\Response
+    public function respondSuccess(array $data): Response
     {
         $this->response->setStatusCode(200);
         $this->response->setJsonContent($data);
@@ -83,9 +89,9 @@ class Controller extends PhController
     }
 
     /**
-     * @return \Phalcon\Http\Response
+     * @return Response
      */
-    public function respondNoContent(): \Phalcon\Http\Response
+    public function respondNoContent(): Response
     {
         $this->response->setStatusCode(204);
 
@@ -94,29 +100,35 @@ class Controller extends PhController
 
     /**
      * @param array $errors
-     * @return \Phalcon\Http\Response
+     *
+     * @return Response
      */
-    public function respondBadRequest(array $errors): \Phalcon\Http\Response
+    public function respondBadRequest(array $errors): Response
     {
         $this->response->setStatusCode(400);
 
-        $data = array_map(function ($a) {
-            return [
-                'field' => $a->getField(),
-                'message' => $a->getMessage(),
-            ]; }, $errors);
+        $data = array_map(
+            function ($a) {
+                return [
+                    'field' => $a->getField(),
+                    'message' => $a->getMessage(),
+                ];
+            }, $errors
+        );
 
-        $this->response->setJsonContent([
-            'errors' => $data
-        ]);
+        $this->response->setJsonContent(
+            [
+                'errors' => $data
+            ]
+        );
 
         return $this->response;
     }
 
     /**
-     * @return \Phalcon\Http\Response
+     * @return Response
      */
-    public function respondNotFound(): \Phalcon\Http\Response
+    public function respondNotFound(): Response
     {
         $this->response->setStatusCode(404);
 

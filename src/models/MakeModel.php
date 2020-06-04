@@ -2,7 +2,7 @@
 
 namespace Rev\Models;
 
-use Phalcon\Mvc\Model\Message;
+use Phalcon\Mvc\Model;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
 
@@ -10,28 +10,31 @@ use Rev\Utils\GenerateSlug;
 
 /**
  * Class MakeModel
+ *
  * @package Rev\Models
  */
-class MakeModel extends \Phalcon\Mvc\Model
+class MakeModel extends Model
 {
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $id;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $value;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $slug;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $logo;
 
     /**
+     * Initialize
+     *
      * @return void
      */
     public function initialize(): void
@@ -40,7 +43,7 @@ class MakeModel extends \Phalcon\Mvc\Model
 
         $this->hasMany(
             'id',
-            '\Rev\Models\AutosModel',
+            '\Rev\Models\AutoModel',
             'video_id',
             ['foreignKey' => true, 'alias' => 'Autos']
         );
@@ -73,9 +76,11 @@ class MakeModel extends \Phalcon\Mvc\Model
 
         $validator->add(
             'value',
-            new PresenceOf([
+            new PresenceOf(
+                [
                 'message' => "Value is required"
-            ])
+                ]
+            )
         );
 
         return $this->validate($validator);

@@ -2,27 +2,28 @@
 
 namespace Rev\Models;
 
-use Phalcon\Mvc\Model\Message;
+use Phalcon\Mvc\Model;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
 
 /**
  * Class ProjectVideosModel
+ *
  * @package Rev\Models
  */
-class ProjectVideosModel extends \Phalcon\Mvc\Model
+class ProjectVideosModel extends Model
 {
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $id;
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $video_id;
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $project_id;
 
     /**
@@ -56,16 +57,20 @@ class ProjectVideosModel extends \Phalcon\Mvc\Model
 
         $validator->add(
             'project_id',
-            new PresenceOf([
+            new PresenceOf(
+                [
                 'message' => "Project ID is required"
-            ])
+                ]
+            )
         );
 
         $validator->add(
             'video_id',
-            new PresenceOf([
+            new PresenceOf(
+                [
                 'message' => "Video ID is required"
-            ])
+                ]
+            )
         );
 
         return $this->validate($validator);
@@ -92,8 +97,6 @@ class ProjectVideosModel extends \Phalcon\Mvc\Model
             return [];
         }
 
-        $obj = $this->baseObj();
-
-        return $obj;
+        return $this->baseObj();
     }
 }

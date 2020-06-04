@@ -2,10 +2,13 @@
 
 namespace Rev\Controllers;
 
+use Phalcon\Http\Response;
+
 use Rev\Models\ModelModel as ModelModel;
 
 /**
  * Class ModelController
+ *
  * @package Rev\Controllers
  */
 class ModelController extends Controller
@@ -16,10 +19,10 @@ class ModelController extends Controller
     public $prefix = '/models';
 
     /**
-     * @param int $id
-     * @return \Phalcon\Http\Response
+     * @param  int $id
+     * @return Response
      */
-    public function get(int $id): \Phalcon\Http\Response
+    public function get(int $id): Response
     {
         $Model = ModelModel::findFirstById($id);
 
@@ -31,9 +34,9 @@ class ModelController extends Controller
     }
 
     /**
-     * @return \Phalcon\Http\Response
+     * @return Response
      */
-    public function search(): \Phalcon\Http\Response
+    public function search(): Response
     {
         $limit = isset($_GET['limit']) ?: 100;
         $acceptedParams = [
@@ -51,14 +54,18 @@ class ModelController extends Controller
             ->groupBy('Rev\Models\ModelModel.id');
 
         if (isset($_GET['make'])) {
-            $query = $query->where("Rev\Models\MakeModel.slug = :slug:", [
+            $query = $query->where(
+                "Rev\Models\MakeModel.slug = :slug:", [
                 'slug' => $_GET['make'],
-            ]);
+                ]
+            );
         }
         if (isset($_GET['model'])) {
-            $query = $query->where("Rev\Models\MakeModel.slug = :slug:", [
+            $query = $query->where(
+                "Rev\Models\MakeModel.slug = :slug:", [
                 'slug' => $_GET['model'],
-            ]);
+                ]
+            );
         }
 
         $data = $this->generatePaginatedData($query, $limit, $_GET['page'] ?? 1, $acceptedParams);

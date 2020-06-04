@@ -2,33 +2,37 @@
 
 namespace Rev\Models;
 
-use Phalcon\Mvc\Model\Message;
+use Phalcon\Mvc\Model;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\PresenceOf;
 use Phalcon\Validation\Validator\Date as DateValidator;
 
 /**
  * Class AutoModel
- * @package Rev\Models
+ *
+ * @package  Rev\Models
+ * @property MakeModel Make
+ * @property ModelModel Model
  */
-class AutoModel extends \Phalcon\Mvc\Model
+class AutoModel extends Model
 {
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $id;
     /**
-    * @var string
-    */
+     * @var string
+     */
     public $year;
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $make_id;
     /**
-    * @var int
-    */
+     * @var int
+     */
     public $model_id;
+
 
     /**
      * Initialize
@@ -134,7 +138,7 @@ class AutoModel extends \Phalcon\Mvc\Model
 
         $obj = $this->baseObj();
 
-        $obj['make'] = $this->Make->build();
+        $obj['make']  = $this->Make->build();
         $obj['model'] = $this->Model->build();
 
         unset($obj['make_id']);

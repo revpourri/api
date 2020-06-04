@@ -2,10 +2,13 @@
 
 namespace Rev\Controllers;
 
+use Phalcon\Http\Response;
+
 use Rev\Models\UploaderModel;
 
 /**
  * Class UploaderController
+ *
  * @package Rev\Controllers
  */
 class UploaderController extends Controller
@@ -16,14 +19,12 @@ class UploaderController extends Controller
     public $prefix = '/uploaders';
 
     /**
-     * @param int $id
+     * @param  int $id
      * @return mixed
      */
     public function get(int $id)
     {
-        $Uploader = UploaderModel::findFirstById($id);
-
-        if (!$Uploader) {
+        if (!$Uploader = UploaderModel::findFirstById($id)) {
             return $this->respondNotFound();
         }
 
@@ -31,9 +32,9 @@ class UploaderController extends Controller
     }
 
     /**
-     * @return \Phalcon\Http\Response
+     * @return Response
      */
-    public function create(): \Phalcon\Http\Response
+    public function create(): Response
     {
         $Uploader = (new UploaderModel())->assign(
             $this->input,
@@ -51,9 +52,9 @@ class UploaderController extends Controller
     }
 
     /**
-     * @return \Phalcon\Http\Response
+     * @return Response
      */
-    public function search(): \Phalcon\Http\Response
+    public function search(): Response
     {
         $limit = $_GET['limit'] ?? 10;
         $acceptedParams = [
@@ -67,9 +68,11 @@ class UploaderController extends Controller
             ->from('Rev\Models\UploaderModel');
 
         if (isset($_GET['name'])) {
-            $query = $query->where('Rev\Models\UploaderModel.name = :name:', [
+            $query = $query->where(
+                'Rev\Models\UploaderModel.name = :name:', [
                 'name' => $_GET['name'],
-            ]);
+                ]
+            );
         }
 
         // Handle sorting

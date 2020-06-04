@@ -2,12 +2,14 @@
 
 namespace Rev\Controllers;
 
+use Phalcon\Http\Response;
 use Rev\Models\AutoModel;
 use Rev\Models\MakeModel;
 use Rev\Models\ModelModel;
 
 /**
  * Class AutoController
+ *
  * @package Rev\Controllers
  */
 class AutoController extends Controller
@@ -19,13 +21,12 @@ class AutoController extends Controller
 
     /**
      * @param int $id
-     * @return \Phalcon\Http\Response
+     *
+     * @return Response
      */
-    public function get(int $id): \Phalcon\Http\Response
+    public function get(int $id): Response
     {
-        $Auto = AutoModel::findFirstById($id);
-
-        if (!$Auto) {
+        if (!$Auto = AutoModel::findFirstById($id)) {
             return $this->respondNotFound();
         }
 
@@ -33,34 +34,38 @@ class AutoController extends Controller
     }
 
     /**
-     * @return \Phalcon\Http\Response
+     * @return Response
      */
-    public function create(): \Phalcon\Http\Response
+    public function create(): Response
     {
-        $Make = MakeModel::findFirstById($this->input['make_id']);
+        $Make = MakeModel::findFirstById($this->input['make_id'] ?? null);
 
         $Model = null;
-        if ($this->input['model_id']) {
+        if ($this->input['model_id'] ?? null) {
             $Model = ModelModel::findFirstById($this->input['model_id']);
-        } elseif ($this->input['model']) {
+        } elseif ($this->input['model'] ?? null) {
             $Model = ModelModel::findFirstByValue($this->input['model']);
         }
 
         if (!$Model) {
-            $Model = (new ModelModel())->assign([
-                'value' => $this->input['model']
-            ]);
+            $Model = (new ModelModel())->assign(
+                [
+                    'value' => $this->input['model'] ?? null
+                ]
+            );
 
             if (!$Model->create()) {
                 return $this->respondBadRequest($Model->getMessages());
             }
         }
 
-        $Auto = (new AutoModel())->assign([
-            'year' => $this->input['year'],
-            'model_id' => $Model->id,
-            'make_id' => $Make->id,
-        ]);
+        $Auto = (new AutoModel())->assign(
+            [
+                'year' => $this->input['year'],
+                'model_id' => $Model->id,
+                'make_id' => $Make->id,
+            ]
+        );
         if (!$Auto->create()) {
             return $this->respondBadRequest($Auto->getMessages());
         }
@@ -70,20 +75,21 @@ class AutoController extends Controller
 
     /**
      * @param int $id
-     * @return \Phalcon\Http\Response
+     *
+     * @return Response
      */
-    public function update(int $id): \Phalcon\Http\Response
+    public function update(int $id): Response
     {
-        $Auto = AutoModel::findFirstById($id);
-
-        if (!$Auto) {
+        if (!$Auto = AutoModel::findFirstById($id)) {
             return $this->respondNotFound();
         }
 
-        $Auto->assign([
-            'year' => $this->input['year']
-        ]);
-        
+        $Auto->assign(
+            [
+                'year' => $this->input['year']
+            ]
+        );
+
         if (!$Auto->update($this->input)) {
             return $this->respondBadRequest($Auto->getMessages());
         }
@@ -93,9 +99,10 @@ class AutoController extends Controller
 
     /**
      * @param int $id
-     * @return \Phalcon\Http\Response
+     *
+     * @return Response
      */
-    public function delete(int $id): \Phalcon\Http\Response
+    public function delete(int $id): Response
     {
         $Auto = AutoModel::findFirstById($id);
 
@@ -109,9 +116,9 @@ class AutoController extends Controller
     }
 
     /**
-     * @return \Phalcon\Http\Response
+     * @return Response
      */
-    public function search(): \Phalcon\Http\Response
+    public function search(): Response
     {
         $limit = $_GET['limit'] ?? 10;
         $acceptedParams = [
@@ -128,14 +135,18 @@ class AutoController extends Controller
             ->join('Rev\Models\ModelModel', 'Rev\Models\AutoModel.model_id = Rev\Models\ModelModel.id');
 
         if (isset($_GET['make']) && isset($_GET['model'])) {
-            $query = $query->where("Rev\Models\MakeModel.slug LIKE :make_slug: AND Rev\Models\ModelModel.slug LIKE :model_slug:", [
-                'make_slug' => $_GET['make'] . '%',
-                'model_slug' => $_GET['model'] . '%',
-            ]);
+            $query = $query->where(
+                "Rev\Models\MakeModel.slug LIKE :make_slug: AND Rev\Models\ModelModel.slug LIKE :model_slug:", [
+                    'make_slug' => $_GET['make'] . '%',
+                    'model_slug' => $_GET['model'] . '%',
+                ]
+            );
         } elseif (isset($_GET['make'])) {
-            $query = $query->where('Rev\Models\MakeModel.slug LIKE :slug:', [
-                'slug' => $_GET['make'] . '%',
-            ]);
+            $query = $query->where(
+                'Rev\Models\MakeModel.slug LIKE :slug:', [
+                    'slug' => $_GET['make'] . '%',
+                ]
+            );
         }
 
         // Handle sorting

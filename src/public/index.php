@@ -96,7 +96,21 @@ $app->before(function () use ($app, $whitelisted, $config) {
     exit;
 });
 
-require __DIR__ . "/../routes.php";
+$routes = require(__DIR__ . "/../routes.php");
+
+foreach ($routes ?? [] as $route) {
+    $collection = new Phalcon\Mvc\Micro\Collection();
+    $collection->setHandler($route['class'], true);
+    $collection->setPrefix($route['prefix']);
+
+    foreach ($route['methods'] as $verb => $methods) {
+        foreach ($methods as $endpoint => $action) {
+            $collection->$verb($endpoint, $action);
+        }
+    }
+
+    $app->mount($collection);
+}
 
 $app->notFound(function () use ($app) {
     $app->response->setStatusCode(404, "Not Found")->setContentType("application/json")->sendHeaders();

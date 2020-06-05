@@ -4,6 +4,7 @@ use Rev\Controllers\AutoController;
 use Rev\Controllers\MakeController;
 use Rev\Controllers\ModelController;
 use Rev\Controllers\ProjectController;
+use Rev\Controllers\UploadController;
 use Rev\Controllers\UploaderController;
 use Rev\Controllers\VideoController;
 
@@ -81,6 +82,17 @@ return [
             ],
     ],
     [
+        'class' => UploadController::class,
+        'prefix' => '/uploads',
+        'methods' =>
+            [
+                'post' =>
+                    [
+                        '/' =>'create',
+                    ],
+            ],
+    ],
+    [
         'class' => UploaderController::class,
         'prefix' => '/uploaders',
         'methods' =>
@@ -93,6 +105,10 @@ return [
                 'post' =>
                     [
                         '/' =>'create',
+                    ],
+                'put' =>
+                    [
+                        '/{id:[0-9]+}' =>'update',
                     ],
             ],
     ],

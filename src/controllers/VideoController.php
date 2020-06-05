@@ -47,7 +47,7 @@ class VideoController extends Controller
                 'published_date',
                 'type',
                 'featured',
-                'preview_video',
+                'preview_video_upload_id',
             ]
         );
 
@@ -113,7 +113,7 @@ class VideoController extends Controller
                 'published_date',
                 'type',
                 'featured',
-                'preview_video',
+                'preview_video_upload_id',
             ]
         );
 
@@ -131,9 +131,7 @@ class VideoController extends Controller
      */
     public function delete(int $id): Response
     {
-        $Video = VideoModel::findFirstById($id);
-
-        if (!$Video) {
+        if (!$Video = VideoModel::findFirstById($id)) {
             return $this->respondNotFound();
         }
 

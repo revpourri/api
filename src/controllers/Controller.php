@@ -24,14 +24,22 @@ class Controller extends PhController
      * @var array
      */
     public $input = [];
+    /**
+     * @var array
+     */
+    public $files = [];
 
     /**
      *
      */
     public function onConstruct()
     {
-        if ($this->request && $this->request->getRawBody()) {
-            $this->input = $this->request->getJsonRawBody(true);
+        if ($this->request) {
+            $this->input = json_decode($this->request->getRawBody(), true) ?? [];
+
+            if ($this->request->hasFiles()) {
+                $this->files = $this->request->getUploadedFiles();
+            }
         }
     }
 
@@ -43,6 +51,16 @@ class Controller extends PhController
     public function setInput(array $data): void
     {
         $this->input = $data;
+    }
+
+    /**
+     * @param array $files
+     *
+     * @return void
+     */
+    public function setFile($file): void
+    {
+        $this->files[] = $file;
     }
 
     /**

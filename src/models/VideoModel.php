@@ -15,6 +15,7 @@ use Phalcon\Validation\Validator\Date as DateValidator;
  * @package  Rev\Models
  * @property UploaderModel Uploader
  * @property VideoAutosModel VideoAutos
+ * @property UploadModel PreviewVideo
  */
 class VideoModel extends Model
 {
@@ -55,9 +56,9 @@ class VideoModel extends Model
      */
     public $featured;
     /**
-     * @var string
+     * @var integer
      */
-    public $preview_video;
+    public $preview_video_upload_id;
 
     /**
      * @var array
@@ -86,6 +87,13 @@ class VideoModel extends Model
             '\Rev\Models\VideoAutosModel',
             'video_id',
             ['foreignKey' => true, 'alias' => 'VideoAutos']
+        );
+
+        $this->hasOne(
+            'preview_video_upload_id',
+            '\Rev\Models\UploadModel',
+            'id',
+            ['foreignKey' => true, 'alias' => 'PreviewVideo']
         );
     }
 
@@ -182,7 +190,7 @@ class VideoModel extends Model
             'uploader_id' => (int)$this->uploader_id,
             'type' => (string)$this->_types[$this->type],
             'featured' => (bool)$this->featured,
-            'preview_video' => (string)$this->preview_video,
+            'preview_video' => $this->PreviewVideo ? (string)$this->PreviewVideo->filename : null,
         ];
     }
 
@@ -203,6 +211,8 @@ class VideoModel extends Model
         foreach ($this->VideoAutos ?? [] as $VideoAuto) {
             $obj['autos'][] = $VideoAuto->Auto->build();
         }
+
+        unset($obj['uploader_id']);
 
         return $obj;
     }

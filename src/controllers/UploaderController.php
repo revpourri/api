@@ -41,10 +41,38 @@ class UploaderController extends Controller
             [
                 'name',
                 'youtube_id',
+                'avatar_upload_id',
             ]
         );
 
         if (!$Uploader->create()) {
+            return $this->respondBadRequest($Uploader->getMessages());
+        }
+
+        return $this->respondSuccess($Uploader->build());
+    }
+
+    /**
+     * @param  int $id
+     *
+     * @return Response
+     */
+    public function update(int $id): Response
+    {
+        if (!$Uploader = UploaderModel::findFirstById($id)) {
+            return $this->respondNotFound();
+        }
+
+        $Uploader->assign(
+            $this->input,
+            [
+                'name',
+                'youtube_id',
+                'avatar_upload_id',
+            ]
+        );
+
+        if (!$Uploader->update()) {
             return $this->respondBadRequest($Uploader->getMessages());
         }
 

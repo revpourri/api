@@ -10,6 +10,7 @@ use Phalcon\Validation\Validator\PresenceOf;
  * Class UploaderModel
  *
  * @package Rev\Models
+ * @property UploadModel Avatar
  */
 class UploaderModel extends Model
 {
@@ -26,9 +27,9 @@ class UploaderModel extends Model
      */
     public $youtube_id;
     /**
-     * @var string
+     * @var integer
      */
-    public $avatar;
+    public $avatar_upload_id;
     /**
      * @var string
      */
@@ -46,6 +47,13 @@ class UploaderModel extends Model
             '\Rev\Models\VideoModel',
             'uploader_id',
             ['foreignKey' => true, 'alias' => 'Videos']
+        );
+
+        $this->hasOne(
+            'avatar_upload_id',
+            '\Rev\Models\UploadModel',
+            'id',
+            ['foreignKey' => true, 'alias' => 'Avatar']
         );
     }
 
@@ -102,7 +110,7 @@ class UploaderModel extends Model
             'id' => (int)$this->id,
             'name' => (string)$this->name,
             'youtube_id' => (string)$this->youtube_id,
-            'avatar' => (string)$this->avatar,
+            'avatar' => $this->Avatar ? (string)$this->Avatar->filename : null,
         ];
     }
 

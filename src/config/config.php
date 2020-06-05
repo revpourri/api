@@ -6,6 +6,9 @@ $settings = [
         "name" => getenv('APP_NAME') ?: 'Revpourri',
         "method" => getenv('APP_URL_METHOD') ?: 'http',
         "api" => getenv('APP_URL_HOST') ?: 'api.revpourri.local',
+        "root" => getenv('APP_ROOT') ?: '/usr/share/nginx/',
+        "logs" => getenv('APP_LOGS') ?: 'storage/logs/',
+        "uploads" => getenv('APP_LOGS') ?: 'storage/uploads/',
     ],
     "application" => [
         "controllersDir" => __DIR__ . "/../../controllers/",

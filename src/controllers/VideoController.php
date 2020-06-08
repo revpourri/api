@@ -160,10 +160,10 @@ class VideoController extends Controller
         $query = $this->modelsManager->createBuilder()
             ->columns('Rev\Models\VideoModel.*')
             ->from('Rev\Models\VideoModel')
-            ->join('Rev\Models\VideoAutosModel', 'Rev\Models\VideoModel.id = Rev\Models\VideoAutosModel.video_id')
-            ->join('Rev\Models\AutoModel', 'Rev\Models\AutoModel.id = Rev\Models\VideoAutosModel.auto_id')
-            ->join('Rev\Models\MakeModel', 'Rev\Models\AutoModel.make_id = Rev\Models\MakeModel.id')
-            ->join('Rev\Models\ModelModel', 'Rev\Models\AutoModel.model_id = Rev\Models\ModelModel.id');
+            ->leftJoin('Rev\Models\VideoAutosModel', 'Rev\Models\VideoModel.id = Rev\Models\VideoAutosModel.video_id')
+            ->leftJoin('Rev\Models\AutoModel', 'Rev\Models\AutoModel.id = Rev\Models\VideoAutosModel.auto_id')
+            ->leftJoin('Rev\Models\MakeModel', 'Rev\Models\AutoModel.make_id = Rev\Models\MakeModel.id')
+            ->leftJoin('Rev\Models\ModelModel', 'Rev\Models\AutoModel.model_id = Rev\Models\ModelModel.id');
 
         if (isset($_GET['make']) && isset($_GET['model'])) {
             $query = $query->where(
@@ -196,6 +196,14 @@ class VideoController extends Controller
             );
         }
 
+        if (isset($_GET['uploader_id'])) {
+            $query = $query->andWhere(
+                'Rev\Models\VideoModel.uploader_id = :uploader_id:', [
+                    'uploader_id' => $_GET['uploader_id'],
+                ]
+            );
+        }
+
         if (isset($_GET['featured'])) {
             $query = $query->andWhere(
                 'Rev\Models\VideoModel.featured = :featured:', [
@@ -214,9 +222,9 @@ class VideoController extends Controller
                 $sortBy = explode(':', $sortBy);
 
                 // Special cases
-                //                if ($sortBy[0] == 'id') {
-                //                    $sortBy[0] = 'Rev\Models\VideoModel.id';
-                //                }
+                if ($sortBy[0] == 'id') {
+                    $sortBy[0] = 'Rev\Models\VideoModel.id';
+                }
 
                 $query = $query->orderBy($sortBy[0] . ' ' . $sortBy[1] . ', Rev\Models\VideoModel.id ' . $sortBy[1]);
             }

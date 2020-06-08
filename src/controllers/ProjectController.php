@@ -5,6 +5,7 @@ namespace Rev\Controllers;
 use Phalcon\Http\Response;
 
 use Rev\Models\ProjectModel;
+use Rev\Utils\PaginationSort;
 
 /**
  * Class ProjectController
@@ -139,21 +140,7 @@ class ProjectController extends Controller
 
         $query = $query->groupBy('Rev\Models\ProjectModel.id');
 
-        // Handle sorting
-        if (isset($_GET['sort'])) {
-            $sortBys = explode(',', $_GET['sort']);
-
-            foreach ($sortBys as $sortBy) {
-                $sortBy = explode(':', $sortBy);
-
-                // Special cases
-                if ($sortBy[0] == 'id') {
-                    $sortBy[0] = 'Rev\Models\ProjectModel.id';
-                }
-
-                $query = $query->orderBy($sortBy[0] . ' ' . $sortBy[1]);
-            }
-        }
+        $query = PaginationSort::sort($query, $_GET['sort'] ?? '', 'Rev\Models\ProjectModel.id');
 
         $data = $this->generatePaginatedData($query, $limit, $_GET['page'] ?? 1, $acceptedParams);
 

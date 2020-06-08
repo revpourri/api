@@ -6,6 +6,7 @@ use Phalcon\Http\Response;
 use Rev\Models\AutoModel;
 use Rev\Models\MakeModel;
 use Rev\Models\ModelModel;
+use Rev\Utils\PaginationSort;
 
 /**
  * Class AutoController
@@ -149,21 +150,7 @@ class AutoController extends Controller
             );
         }
 
-        // Handle sorting
-        if (isset($_GET['sort']) && !empty($_GET['sort'])) {
-            $sortBys = explode(',', $_GET['sort']);
-
-            foreach ($sortBys as $sortBy) {
-                $sortBy = explode(':', $sortBy);
-
-                // Special cases
-                if ($sortBy[0] == 'id') {
-                    $sortBy[0] = 'Rev\Models\AutoModel.id';
-                }
-
-                $query = $query->orderBy($sortBy[0] . ' ' . $sortBy[1]);
-            }
-        }
+        $query = PaginationSort::sort($query, $_GET['sort'] ?? '', 'Rev\Models\AutoModel.id');
 
         $data = $this->generatePaginatedData($query, $limit, $_GET['page'] ?? 1, $acceptedParams);
 

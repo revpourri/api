@@ -5,6 +5,7 @@ namespace Rev\Controllers;
 use Phalcon\Http\Response;
 
 use Rev\Models\UploaderModel;
+use Rev\Utils\PaginationSort;
 
 /**
  * Class UploaderController
@@ -103,21 +104,7 @@ class UploaderController extends Controller
             );
         }
 
-        // Handle sorting
-        if (isset($_GET['sort'])) {
-            $sortBys = explode(',', $_GET['sort']);
-
-            foreach ($sortBys as $sortBy) {
-                $sortBy = explode(':', $sortBy);
-
-                // Special cases
-                if ($sortBy[0] == 'id') {
-                    $sortBy[0] = 'Rev\Models\UploaderModel.id';
-                }
-
-                $query = $query->orderBy($sortBy[0] . ' ' . $sortBy[1]);
-            }
-        }
+        $query = PaginationSort::sort($query, $_GET['sort'] ?? '', 'Rev\Models\UploaderModel.id');
 
         $data = $this->generatePaginatedData($query, $limit, $_GET['page'] ?? 1, $acceptedParams);
 

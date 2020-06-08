@@ -5,6 +5,7 @@ namespace Rev\Controllers;
 use Phalcon\Http\Response;
 
 use Rev\Models\ModelModel as ModelModel;
+use Rev\Utils\PaginationSort;
 
 /**
  * Class ModelController
@@ -67,6 +68,8 @@ class ModelController extends Controller
                 ]
             );
         }
+
+        $query = PaginationSort::sort($query, $_GET['sort'] ?? '', 'Rev\Models\ModelModel.id');
 
         $data = $this->generatePaginatedData($query, $limit, $_GET['page'] ?? 1, $acceptedParams);
 

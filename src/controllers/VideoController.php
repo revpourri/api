@@ -4,9 +4,10 @@ namespace Rev\Controllers;
 
 use Phalcon\Http\Response;
 
-use \Rev\Models\ProjectVideosModel;
+use Rev\Models\ProjectVideosModel;
 use Rev\Models\VideoModel;
 use Rev\Models\VideoAutosModel;
+use Rev\Utils\PaginationSort;
 
 /**
  * Class VideoController
@@ -214,21 +215,7 @@ class VideoController extends Controller
 
         $query = $query->groupBy('Rev\Models\VideoModel.id');
 
-        // Handle sorting
-        if (isset($_GET['sort'])) {
-            $sortBys = explode(',', $_GET['sort']);
-
-            foreach ($sortBys as $sortBy) {
-                $sortBy = explode(':', $sortBy);
-
-                // Special cases
-                if ($sortBy[0] == 'id') {
-                    $sortBy[0] = 'Rev\Models\VideoModel.id';
-                }
-
-                $query = $query->orderBy($sortBy[0] . ' ' . $sortBy[1] . ', Rev\Models\VideoModel.id ' . $sortBy[1]);
-            }
-        }
+        $query = PaginationSort::sort($query, $_GET['sort'] ?? '', 'Rev\Models\VideoModel.id');
 
         $data = $this->generatePaginatedData($query, $limit, $_GET['page'] ?? 1, $acceptedParams);
 

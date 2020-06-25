@@ -50,6 +50,13 @@ class VideoAutosModel extends Model
             'id',
             ['foreignKey' => true, 'alias' => 'Auto']
         );
+
+        $this->hasMany(
+            'id',
+            '\Rev\Models\VideoAutoTagsModel',
+            'video_auto_id',
+            ['foreignKey' => true, 'alias' => 'VideoAutoTags']
+        );
     }
 
     /**

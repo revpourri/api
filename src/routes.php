@@ -4,6 +4,7 @@ use Rev\Controllers\AutoController;
 use Rev\Controllers\MakeController;
 use Rev\Controllers\ModelController;
 use Rev\Controllers\ProjectController;
+use Rev\Controllers\TagController;
 use Rev\Controllers\UploadController;
 use Rev\Controllers\UploaderController;
 use Rev\Controllers\VideoController;
@@ -78,6 +79,22 @@ return [
                 'delete' =>
                     [
                         '/{id:[0-9]+}' =>'delete',
+                    ],
+            ],
+    ],
+    [
+        'class' => TagController::class,
+        'prefix' => '/',
+        'methods' =>
+            [
+                'post' =>
+                    [
+                        'video-autos/{id:[0-9]+}/tags' =>'addToVideoAuto',
+                    ],
+                'delete' =>
+                    [
+                        'video-autos/{videoAutoId:[0-9]+}/tags' =>'deleteAllFromVideoAuto',
+                        'video-autos/{videoAutoId:[0-9]+}/tags/{tagId:[0-9]+}' =>'deleteFromVideoAuto',
                     ],
             ],
     ],

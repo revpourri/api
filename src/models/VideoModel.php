@@ -209,7 +209,13 @@ class VideoModel extends Model
 
         $obj['autos'] = [];
         foreach ($this->VideoAutos ?? [] as $VideoAuto) {
-            $obj['autos'][] = $VideoAuto->Auto->build();
+            $auto = $VideoAuto->Auto->build();
+
+            $auto['tags'] = [];
+            foreach ($VideoAuto->VideoAutoTags as $VideoAutoTags) {
+                $auto['tags'][] = $VideoAutoTags->Tag->build();
+            }
+            $obj['autos'][] = $auto;
         }
 
         unset($obj['uploader_id']);

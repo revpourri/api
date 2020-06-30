@@ -106,6 +106,10 @@ class VideoController extends Controller
             return $this->respondNotFound();
         }
 
+        if (isset($this->input['preview_video_upload_id']) && empty($this->input['preview_video_upload_id'])) {
+            unset($this->input['preview_video_upload_id']);
+        }
+
         $Video->assign(
             $this->input, [
                 'title',
@@ -120,6 +124,33 @@ class VideoController extends Controller
 
         if (!$Video->update()) {
             return $this->respondBadRequest($Video->getMessages());
+        }
+
+        if (isset($this->input['autos'])) {
+            // if current auto is not in body, remove
+            foreach ($Video->VideoAutos as $VideoAuto) {
+                if (array_search((integer)$VideoAuto->auto_id, array_column($this->input['autos'], 'id')) === false) {
+                    $VideoAuto->delete();
+                }
+            }
+
+            foreach ($this->input['autos'] as $auto) {
+                if (!$VideoAuto = VideoAutosModel::findFirst([
+                    'conditions' => 'video_id = :video_id: AND auto_id = :auto_id:',
+                    'bind' => [
+                        'video_id' => $Video->id,
+                        'auto_id' => $auto['id'],
+                    ],
+                ])) {
+                    $VideoAuto = (new VideoAutosModel())->assign(
+                        [
+                            'video_id' => $Video->id,
+                            'auto_id' => $auto['id'],
+                        ]
+                    );
+                    $VideoAuto->save();
+                }
+            }
         }
 
         return $this->respondSuccess($Video->build());

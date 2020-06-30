@@ -116,6 +116,16 @@ class VideoModel extends Model
     }
 
     /**
+     * @return void
+     */
+    public function beforeValidationOnUpdate(): void
+    {
+        if (!is_int($this->type)) {
+            $this->type = array_search($this->type, $this->_types);
+        }
+    }
+
+    /**
      * @return bool
      */
     public function beforeValidation(): bool
